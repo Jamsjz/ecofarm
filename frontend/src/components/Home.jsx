@@ -1,11 +1,14 @@
 import React from 'react';
-import { CloudRain, Droplets, FlaskConical, Leaf, MapPin, Moon, Skull, Sun, Trash2, Wind } from 'lucide-react';
+import { CloudRain, Droplets, FlaskConical, Leaf, MapPin, Moon, Skull, Sun, Trash2, Wind, Grid3X3 } from 'lucide-react';
 import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+
+// Backend API URL
+const API_URL = 'http://localhost:8000';
 
 const BIOME = { TERAI: 'Terai', HILLY: 'Hilly', MOUNTAIN: 'Mountain' };
 const STAGE = { SEED: 'Seed', SPROUT: 'Sprout', MATURE: 'Mature' };
@@ -35,7 +38,7 @@ const cropProfileFor = (species) => CROP_PROFILES[species] || defaultCropProfile
 const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
 const uid = () => (globalThis.crypto?.randomUUID ? globalThis.crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`);
 const stageFrom = (p) => (p < 35 ? STAGE.SEED : p < 75 ? STAGE.SPROUT : STAGE.MATURE);
-const DAY_TICKS = 101;
+const DAY_TICKS = 20; // Reduced from 101 for faster simulation (each day = 20 ticks)
 
 function detectBiome(raw) {
     const q = String(raw || '').toLowerCase();
@@ -270,6 +273,89 @@ export default function Home() {
     const [nurseryOpen, setNurseryOpen] = React.useState(false);
     const nurseryRef = React.useRef(null);
 
+    // Grid selection state
+    const [selection, setSelection] = React.useState(new Set());
+
+    // Crop recommendations from ML model
+    const [recommendations, setRecommendations] = React.useState([]);
+    const [recsLoading, setRecsLoading] = React.useState(false);
+
+    // Grid selection functions
+    const toggleCellSelection = React.useCallback((idx) => {
+        setSelection(prev => {
+            const next = new Set(prev);
+            if (next.has(idx)) next.delete(idx);
+            else next.add(idx);
+            return next;
+        });
+    }, []);
+
+    const selectRow = React.useCallback((rowIndex) => {
+        setSelection(prev => {
+            const next = new Set(prev);
+            for (let c = 0; c < 4; c++) next.add(rowIndex * 4 + c);
+            return next;
+        });
+    }, []);
+
+    const selectCol = React.useCallback((colIndex) => {
+        setSelection(prev => {
+            const next = new Set(prev);
+            for (let r = 0; r < 4; r++) next.add(r * 4 + colIndex);
+            return next;
+        });
+    }, []);
+
+    const selectAll = React.useCallback(() => {
+        const next = new Set();
+        for (let i = 0; i < 16; i++) next.add(i);
+        setSelection(next);
+    }, []);
+
+    const clearSelection = React.useCallback(() => setSelection(new Set()), []);
+
+    // Fetch crop recommendations from backend
+    const fetchRecommendations = React.useCallback(async () => {
+        setRecsLoading(true);
+        try {
+            // Build average soil params from environment
+            const defaults = defaultsFor(biome);
+            const reqBody = {
+                n: 40 + (rain / 10),
+                p: 40,
+                k: 40,
+                temperature: temp,
+                humidity: defaults.sun,
+                ph: 6.5,
+                rainfall: rain * 2.5
+            };
+            const res = await fetch(`${API_URL}/recommend`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(reqBody)
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setRecommendations(data.recommendations || []);
+            }
+        } catch (e) {
+            console.log('Recommendations fetch failed:', e);
+            // Fallback to mock recommendations
+            setRecommendations([
+                { crop: 'Rice', score: 85 },
+                { crop: 'Maize', score: 72 },
+                { crop: 'Banana', score: 65 }
+            ]);
+        } finally {
+            setRecsLoading(false);
+        }
+    }, [biome, temp, rain]);
+
+    // Fetch recommendations on mount and when environment changes
+    React.useEffect(() => {
+        fetchRecommendations();
+    }, [biome, temp]);
+
     const clockInfo = React.useMemo(() => {
         const mins = Math.round((clamp(tod, 0, 100) / 100) * 24 * 60);
         const hh24 = Math.floor(mins / 60) % 24;
@@ -304,9 +390,9 @@ export default function Home() {
     ].join(',');
 
     const SPEEDS = React.useMemo(() => [
-        { label: 'Slow', tickMs: 400 },
-        { label: 'Medium', tickMs: 200 },
-        { label: 'Fast', tickMs: 100 },
+        { label: 'Slow', tickMs: 500 },    // Relaxed pace - visible progress
+        { label: 'Medium', tickMs: 200 },   // Balanced - good for normal play
+        { label: 'Fast', tickMs: 80 },      // Quick results - still smooth
     ], []);
     const tickMs = SPEEDS[clamp(speedIdx, 0, 2)]?.tickMs ?? 200;
     const speedLabel = SPEEDS[clamp(speedIdx, 0, 2)]?.label ?? 'Medium';
@@ -617,12 +703,11 @@ export default function Home() {
                         return { ...p, requiredAction: newCareNeeded.action, careDueAtMs: expiresAtMs };
                     }),
                 );
-                setCarePrompt({ ...newCareNeeded, dueAtMs: expiresAtMs, resumeRunning: true });
-                setToast(`🛑 Care needed: ${newCareNeeded.action}! You have 20 seconds to respond.`);
+                setCarePrompt({ ...newCareNeeded, dueAtMs: expiresAtMs, resumeRunning: false });
+                setToast(`⚠️ Care needed: ${newCareNeeded.action}! Crops continue growing but with penalties.`);
                 setSliderValue(-1);
-                // PAUSE simulation for 20 seconds to give user time
-                setRunning(false);
-                return; // Exit early - simulation paused
+                // DON'T pause simulation - let plants grow with penalty
+                // setRunning(false);
             }
 
             let rolled = false;
@@ -677,12 +762,12 @@ export default function Home() {
 
                     let growthDays = baseGrowthDays;
                     const deltaDays = 1 / DAY_TICKS;
-                    // Speed multiplier: Fast=10x, Medium=5x, Slow=2x (much faster growth)
-                    const speedMultiplier = speedIdxRef.current === 2 ? 10 : speedIdxRef.current === 1 ? 5 : 2;
-                    let rate = 1 * speedMultiplier * careNeglectPenalty;
-                    if (p.preferredBiome === b2) rate *= 1.5;
-                    if (tt2 <= 8) rate *= 0.6;
-                    const healthFactor = 0.5 + (health / 100) * 0.5;
+                    // Speed multiplier: Fast=30x, Medium=15x, Slow=5x (much faster growth)
+                    const speedMultiplier = speedIdxRef.current === 2 ? 30 : speedIdxRef.current === 1 ? 15 : 5;
+                    let rate = 1.5 * speedMultiplier * careNeglectPenalty; // Base rate 1.5x
+                    if (p.preferredBiome === b2) rate *= 1.3;
+                    if (tt2 <= 8) rate *= 0.8;
+                    const healthFactor = 0.7 + (health / 100) * 0.3; // Min 70% growth even at low health
                     growthDays = clamp(growthDays + deltaDays * rate * healthFactor, 0, profile.daysToMature);
                     const gp = clamp((growthDays / profile.daysToMature) * 100, 0, 100);
 
@@ -864,12 +949,33 @@ export default function Home() {
     );
 
     const waterAll = React.useCallback(() => {
+        // Check if any cells are selected
+        if (selection.size === 0) {
+            setToast('⚠️ Select cells first! Use row/column buttons or click cells.');
+            return;
+        }
+
+        const costPerCell = 10;
+        const totalCost = selection.size * costPerCell;
+
+        // Check if enough coins
+        if (coinsRef.current < totalCost) {
+            setToast(`❌ Not enough coins! Need ${totalCost}g, have ${coinsRef.current}g`);
+            return;
+        }
+
         rainManualRef.current = true;
         setRain((r) => clamp(r + 20, 0, 100));
         const globalTick = dayRef.current * DAY_TICKS + todRef.current;
+
+        let affected = 0;
         setGrid((prev) =>
-            prev.map((p) => {
+            prev.map((p, idx) => {
+                // Only apply to selected cells
+                if (!selection.has(idx)) return p;
                 if (!p || p.isDead) return p;
+
+                affected++;
                 const clears = String(p.requiredAction || '') === ACTION.WATER;
                 return {
                     ...p,
@@ -880,20 +986,47 @@ export default function Home() {
                 };
             }),
         );
-        setToast('Water All: moisture increased.');
+
+        // Decrement coins
+        const actualCost = affected * costPerCell;
+        coinsRef.current = coinsRef.current - actualCost;
+        setCoins(coinsRef.current);
+
+        setToast(`💧 Watered ${affected} cells (-${actualCost}g)`);
         const cp = carePromptRef.current;
         if (cp?.action === ACTION.WATER) {
             setCarePrompt(null);
             setSliderValue(-1);
             if (cp?.resumeRunning) setRunning(true);
         }
-    }, []);
+    }, [selection]);
 
     const insecticideAll = React.useCallback(() => {
+        // Check if any cells are selected
+        if (selection.size === 0) {
+            setToast('⚠️ Select cells first! Use row/column buttons or click cells.');
+            return;
+        }
+
+        const costPerCell = 15;
+        const totalCost = selection.size * costPerCell;
+
+        // Check if enough coins
+        if (coinsRef.current < totalCost) {
+            setToast(`❌ Not enough coins! Need ${totalCost}g, have ${coinsRef.current}g`);
+            return;
+        }
+
         const globalTick = dayRef.current * DAY_TICKS + todRef.current;
+
+        let affected = 0;
         setGrid((prev) =>
-            prev.map((p) => {
+            prev.map((p, idx) => {
+                // Only apply to selected cells
+                if (!selection.has(idx)) return p;
                 if (!p || p.isDead) return p;
+
+                affected++;
                 const clears = String(p.requiredAction || '') === ACTION.INSECTICIDE;
                 return {
                     ...p,
@@ -903,20 +1036,47 @@ export default function Home() {
                 };
             }),
         );
-        setToast('Insecticide applied: pest risk reduced.');
+
+        // Decrement coins
+        const actualCost = affected * costPerCell;
+        coinsRef.current = coinsRef.current - actualCost;
+        setCoins(coinsRef.current);
+
+        setToast(`🧪 Insecticide applied to ${affected} cells (-${actualCost}g)`);
         const cp = carePromptRef.current;
         if (cp?.action === ACTION.INSECTICIDE) {
             setCarePrompt(null);
             setSliderValue(-1);
             if (cp?.resumeRunning) setRunning(true);
         }
-    }, []);
+    }, [selection]);
 
     const pesticideAll = React.useCallback(() => {
+        // Check if any cells are selected
+        if (selection.size === 0) {
+            setToast('⚠️ Select cells first! Use row/column buttons or click cells.');
+            return;
+        }
+
+        const costPerCell = 15;
+        const totalCost = selection.size * costPerCell;
+
+        // Check if enough coins
+        if (coinsRef.current < totalCost) {
+            setToast(`❌ Not enough coins! Need ${totalCost}g, have ${coinsRef.current}g`);
+            return;
+        }
+
         const globalTick = dayRef.current * DAY_TICKS + todRef.current;
+
+        let affected = 0;
         setGrid((prev) =>
-            prev.map((p) => {
+            prev.map((p, idx) => {
+                // Only apply to selected cells
+                if (!selection.has(idx)) return p;
                 if (!p || p.isDead) return p;
+
+                affected++;
                 const clears = String(p.requiredAction || '') === ACTION.PESTICIDE;
                 return {
                     ...p,
@@ -926,67 +1086,95 @@ export default function Home() {
                 };
             }),
         );
-        setToast('Pesticide applied: fungus risk reduced.');
+
+        // Decrement coins
+        const actualCost = affected * costPerCell;
+        coinsRef.current = coinsRef.current - actualCost;
+        setCoins(coinsRef.current);
+
+        setToast(`🧫 Pesticide applied to ${affected} cells (-${actualCost}g)`);
         const cp = carePromptRef.current;
         if (cp?.action === ACTION.PESTICIDE) {
             setCarePrompt(null);
             setSliderValue(-1);
             if (cp?.resumeRunning) setRunning(true);
         }
-    }, []);
+    }, [selection]);
 
     const harvestAll = React.useCallback(() => {
-        let harvested = 0;
-        const by = new Map();
-        const harvestedCells = [];
-        setGrid((prev) =>
-            prev.map((p, idx) => {
-                if (!p) return null;
-                if (p.isDead) return p;
-                if (p.growthStage === STAGE.MATURE) {
-                    harvested += 1;
-                    harvestedCells.push(idx);
-                    const k = p.species;
-                    const cur = by.get(k) || { species: p.species, emoji: p.emoji, count: 0 };
-                    cur.count += 1;
-                    by.set(k, cur);
-                    return null;
-                }
-                return p;
-            }),
-        );
-        if (!harvested) {
-            setToast('No mature crops ready.');
+        // Check if any cells are selected
+        if (selection.size === 0) {
+            setToast('⚠️ Select cells first! Use row/column buttons or click cells.');
             return;
         }
-        setCoins((c) => c + harvested * 5);
-        const parts = Array.from(by.values()).map((x) => `${x.emoji} ${x.species} ×${x.count}`);
-        setToast(`Harvested ${harvested} (+${harvested * 5} coins): ${parts.join(' · ')}`);
 
-        const box = coinBoxRef.current?.getBoundingClientRect?.();
-        if (box) {
-            const toX = box.left + box.width / 2;
-            const toY = box.top + box.height / 2;
-            const now = Date.now();
-            const bursts = harvestedCells
-                .map((i) => {
-                    const el = cellRefs.current?.[i];
-                    const r = el?.getBoundingClientRect?.();
-                    if (!r) return null;
-                    return {
-                        id: uid(),
-                        fromX: r.left + r.width / 2,
-                        fromY: r.top + r.height / 2,
-                        toX,
-                        toY,
-                        phase: 0,
-                        t0: now,
-                    };
-                })
-                .filter(Boolean);
-            if (bursts.length) setCoinBursts((prev) => [...prev, ...bursts]);
-        }
-    }, []);
+        // Use mutable refs to track harvest results inside setGrid
+        const harvestResults = { count: 0, cells: [], species: new Map() };
+
+        setGrid((prev) => {
+            const next = prev.map((p, idx) => {
+                // Only harvest from selected cells
+                if (!selection.has(idx)) return p;
+                if (!p || p.isDead) return p;
+
+                // Check if mature (growthProgress >= 75 = MATURE)
+                const gp = Number.isFinite(p.growthProgress) ? p.growthProgress : 0;
+                const isMature = gp >= 75;
+
+                if (isMature) {
+                    harvestResults.count += 1;
+                    harvestResults.cells.push(idx);
+                    const k = p.species;
+                    const cur = harvestResults.species.get(k) || { species: p.species, emoji: p.emoji, count: 0 };
+                    cur.count += 1;
+                    harvestResults.species.set(k, cur);
+                    return null; // Remove harvested crop
+                }
+                return p;
+            });
+            return next;
+        });
+
+        // Check results after a microtask to allow setGrid to complete
+        setTimeout(() => {
+            if (harvestResults.count === 0) {
+                setToast('🌱 No mature crops in selected cells.');
+                return;
+            }
+
+            // Earn coins for harvest (50g per crop)
+            const earnedCoins = harvestResults.count * 50;
+            coinsRef.current = coinsRef.current + earnedCoins;
+            setCoins(coinsRef.current);
+
+            const parts = Array.from(harvestResults.species.values()).map((x) => `${x.emoji} ${x.species} ×${x.count}`);
+            setToast(`🌾 Harvested ${harvestResults.count} crops (+${earnedCoins}g): ${parts.join(' · ')}`);
+
+            const box = coinBoxRef.current?.getBoundingClientRect?.();
+            if (box) {
+                const toX = box.left + box.width / 2;
+                const toY = box.top + box.height / 2;
+                const now = Date.now();
+                const bursts = harvestResults.cells
+                    .map((i) => {
+                        const el = cellRefs.current?.[i];
+                        const r = el?.getBoundingClientRect?.();
+                        if (!r) return null;
+                        return {
+                            id: uid(),
+                            fromX: r.left + r.width / 2,
+                            fromY: r.top + r.height / 2,
+                            toX,
+                            toY,
+                            phase: 0,
+                            t0: now,
+                        };
+                    })
+                    .filter(Boolean);
+                if (bursts.length) setCoinBursts((prev) => [...prev, ...bursts]);
+            }
+        }, 0);
+    }, [selection]);
 
     const clearDead = React.useCallback(() => {
         let cleared = 0;
@@ -1253,6 +1441,47 @@ export default function Home() {
                         <div ref={wrapRef} className="relative mt-4 rounded-2xl p-4 ring-1 ring-white/10" style={{ background: '#064e3b' }}>
                             <div className="absolute inset-0 rounded-2xl opacity-95" style={soilStyle(biome)} />
                             <canvas ref={canvasRef} className="pointer-events-none absolute inset-0 h-full w-full" />
+
+                            {/* Grid Selection Controls */}
+                            <div className="relative mb-3 flex flex-wrap items-center gap-2 rounded-xl bg-black/30 p-2">
+                                <div className="flex items-center gap-1 text-xs opacity-80">
+                                    <Grid3X3 className="h-4 w-4" />
+                                    <span>Select:</span>
+                                </div>
+                                {[0, 1, 2, 3].map(i => (
+                                    <button
+                                        key={`row-${i}`}
+                                        onClick={() => selectRow(i)}
+                                        className="rounded-lg bg-white/10 px-2 py-1 text-[11px] font-medium ring-1 ring-white/10 hover:bg-white/20 transition-colors"
+                                    >
+                                        Row {i + 1}
+                                    </button>
+                                ))}
+                                <span className="opacity-40">|</span>
+                                {[0, 1, 2, 3].map(i => (
+                                    <button
+                                        key={`col-${i}`}
+                                        onClick={() => selectCol(i)}
+                                        className="rounded-lg bg-white/10 px-2 py-1 text-[11px] font-medium ring-1 ring-white/10 hover:bg-white/20 transition-colors"
+                                    >
+                                        Col {i + 1}
+                                    </button>
+                                ))}
+                                <span className="opacity-40">|</span>
+                                <button
+                                    onClick={selectAll}
+                                    className="rounded-lg bg-emerald-500/25 px-2 py-1 text-[11px] font-semibold ring-1 ring-emerald-300/20 hover:bg-emerald-500/40 transition-colors"
+                                >
+                                    All
+                                </button>
+                                <button
+                                    onClick={clearSelection}
+                                    className="rounded-lg bg-rose-500/25 px-2 py-1 text-[11px] font-semibold ring-1 ring-rose-300/20 hover:bg-rose-500/40 transition-colors"
+                                >
+                                    Clear ({selection.size})
+                                </button>
+                            </div>
+
                             <div className="relative grid grid-cols-4 gap-3">
                                 {grid.map((p, i) => (
                                     <div
@@ -1260,9 +1489,10 @@ export default function Home() {
                                         ref={(el) => {
                                             cellRefs.current[i] = el;
                                         }}
-                                        className="relative aspect-square select-none rounded-xl bg-black/20 ring-1 ring-white/10"
+                                        className={`relative aspect-square select-none rounded-xl bg-black/20 ring-1 transition-all cursor-pointer ${selection.has(i) ? 'ring-2 ring-emerald-400 bg-emerald-500/20' : 'ring-white/10 hover:ring-white/30'}`}
                                         onClick={() => {
                                             if (!p && selectedCrop) dropToCell(i, selectedCrop);
+                                            else toggleCellSelection(i);
                                         }}
                                         onDragOver={(e) => e.preventDefault()}
                                         onDrop={(e) => {
@@ -1382,6 +1612,43 @@ export default function Home() {
                                     <input type="range" min="0" max="100" value={wind} onChange={(e) => { windManualRef.current = true; setWind(Number(e.target.value)); }} className="w-full" />
                                 </label>
                             </div>
+                        </div>
+
+                        {/* Crop Recommendations Section */}
+                        <div className={`rounded-2xl p-3 ${glass}`}>
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2 text-sm font-semibold">🌱 Top 3 Recommended Crops</div>
+                                <button
+                                    onClick={fetchRecommendations}
+                                    disabled={recsLoading}
+                                    className="text-[10px] opacity-70 hover:opacity-100 disabled:opacity-40"
+                                >
+                                    {recsLoading ? '...' : '↻'}
+                                </button>
+                            </div>
+                            <div className="mt-3 space-y-2">
+                                {recommendations.length === 0 && !recsLoading && (
+                                    <div className="text-[11px] opacity-60">No recommendations yet. Start the backend server.</div>
+                                )}
+                                {recommendations.map((rec, i) => (
+                                    <div
+                                        key={rec.crop}
+                                        className={`flex items-center justify-between rounded-xl px-3 py-2 ring-1 ${i === 0 ? 'bg-emerald-500/20 ring-emerald-300/20' :
+                                            i === 1 ? 'bg-amber-500/15 ring-amber-300/15' :
+                                                'bg-white/10 ring-white/10'
+                                            }`}
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-[12px] font-bold opacity-60">#{i + 1}</span>
+                                            <span className="font-semibold text-sm">{rec.crop}</span>
+                                        </div>
+                                        <span className={`text-sm font-bold ${i === 0 ? 'text-emerald-400' : i === 1 ? 'text-amber-400' : 'text-white/70'}`}>
+                                            {typeof rec.score === 'number' ? `${Math.round(rec.score)}g` : rec.score}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="mt-2 text-[10px] opacity-50">Based on current soil & weather conditions</div>
                         </div>
 
                         <div className={`rounded-2xl p-3 ${glass}`}>
