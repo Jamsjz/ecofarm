@@ -44,6 +44,56 @@
         "documentation": {}
     },
     {
+        "label": "pandas",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "pandas",
+        "description": "pandas",
+        "detail": "pandas",
+        "documentation": {}
+    },
+    {
+        "label": "numpy",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "numpy",
+        "description": "numpy",
+        "detail": "numpy",
+        "documentation": {}
+    },
+    {
+        "label": "array",
+        "importPath": "numpy",
+        "description": "numpy",
+        "isExtraImport": true,
+        "detail": "numpy",
+        "documentation": {}
+    },
+    {
+        "label": "CROPS_USED",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "MODEL_ALPHA",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "MODEL_GOLDUNIT",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
         "label": "bin_dir",
         "kind": 5,
         "importPath": ".venv.bin.activate_this",
@@ -134,12 +184,39 @@
         "documentation": {}
     },
     {
+        "label": "MODEL_ALPHA",
+        "kind": 5,
+        "importPath": "constants",
+        "description": "constants",
+        "peekOfCode": "MODEL_ALPHA = 100\nMODEL_GOLDUNIT = 10",
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "MODEL_GOLDUNIT",
+        "kind": 5,
+        "importPath": "constants",
+        "description": "constants",
+        "peekOfCode": "MODEL_GOLDUNIT = 10",
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
         "label": "main",
         "kind": 2,
         "importPath": "main",
         "description": "main",
         "peekOfCode": "def main():\n    print(\"Hello from ecofarm!\")\nif __name__ == \"__main__\":\n    main()",
         "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "Model",
+        "kind": 6,
+        "importPath": "model",
+        "description": "model",
+        "peekOfCode": "class Model:\n    def __init__(\n        self,\n        alpha=MODEL_ALPHA,\n        goldunit=MODEL_GOLDUNIT,\n        crops_used=CROPS_USED,\n    ):\n        self._df = pd.read_csv(\"./data/data.csv\")\n        self.alpha = alpha\n        self.goldunit = goldunit",
+        "detail": "model",
         "documentation": {}
     }
 ]
