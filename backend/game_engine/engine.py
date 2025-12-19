@@ -1,4 +1,3 @@
-from game_engine.clock import Clock
 from typing import List
 from dataclasses import dataclass
 from constants import ACTIONS
@@ -7,7 +6,6 @@ from constants import ACTIONS
 @dataclass
 class GameState:
     location: str
-    clock: Clock
     gold: int
     grid: List["CellState"]
 
@@ -25,5 +23,6 @@ class CellState:
     def take_action(self, action: str):
         action_dict = ACTIONS[action]
         for k, v in action_dict["effect"].items():
-            setattr(self, k, getattr(self, k) + v)
+            # if key not found, add 0
+            setattr(self, k, getattr(self, k, 0) + v)
         return action_dict["name"]
