@@ -10,3 +10,6 @@ CROPS_USED = [
     "orange",
     "cotton",
 ]
+
+MODEL_ALPHA = 100
+MODEL_GOLDUNIT = 10
