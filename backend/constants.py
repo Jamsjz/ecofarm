@@ -11,6 +11,8 @@ CROPS_USED = [
     "cotton",
 ]
 
+GRID_WIDTH = 4
+
 MODEL_ALPHA = 100
 MODEL_GOLDUNIT = 10
 SPEED = 1400
