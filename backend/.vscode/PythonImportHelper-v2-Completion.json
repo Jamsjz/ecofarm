@@ -44,6 +44,55 @@
         "documentation": {}
     },
     {
+        "label": "time",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "time",
+        "description": "time",
+        "detail": "time",
+        "documentation": {}
+    },
+    {
+        "label": "dataclass",
+        "importPath": "dataclasses",
+        "description": "dataclasses",
+        "isExtraImport": true,
+        "detail": "dataclasses",
+        "documentation": {}
+    },
+    {
+        "label": "SPEED",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "CROPS_USED",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "MODEL_ALPHA",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "MODEL_GOLDUNIT",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
         "label": "pandas",
         "kind": 6,
         "isExtraImport": true,
@@ -70,27 +119,11 @@
         "documentation": {}
     },
     {
-        "label": "CROPS_USED",
-        "importPath": "constants",
-        "description": "constants",
+        "label": "Clock",
+        "importPath": "game_engine.clock",
+        "description": "game_engine.clock",
         "isExtraImport": true,
-        "detail": "constants",
-        "documentation": {}
-    },
-    {
-        "label": "MODEL_ALPHA",
-        "importPath": "constants",
-        "description": "constants",
-        "isExtraImport": true,
-        "detail": "constants",
-        "documentation": {}
-    },
-    {
-        "label": "MODEL_GOLDUNIT",
-        "importPath": "constants",
-        "description": "constants",
-        "isExtraImport": true,
-        "detail": "constants",
+        "detail": "game_engine.clock",
         "documentation": {}
     },
     {
@@ -175,6 +208,15 @@
         "documentation": {}
     },
     {
+        "label": "Clock",
+        "kind": 6,
+        "importPath": "game_engine.clock",
+        "description": "game_engine.clock",
+        "peekOfCode": "class Clock:\n    start_real: float = time.monotonic()\n    start_game: float = 0.0\n    speed: float = SPEED  # 1.0 = real time, 2.0 = 2x faster, 0 = paused\n    def now(self) -> float:\n        return self.start_game + (time.monotonic() - self.start_real) * self.speed",
+        "detail": "game_engine.clock",
+        "documentation": {}
+    },
+    {
         "label": "CROPS_USED",
         "kind": 5,
         "importPath": "constants",
@@ -188,7 +230,7 @@
         "kind": 5,
         "importPath": "constants",
         "description": "constants",
-        "peekOfCode": "MODEL_ALPHA = 100\nMODEL_GOLDUNIT = 10",
+        "peekOfCode": "MODEL_ALPHA = 100\nMODEL_GOLDUNIT = 10\nSPEED = 1400",
         "detail": "constants",
         "documentation": {}
     },
@@ -197,7 +239,16 @@
         "kind": 5,
         "importPath": "constants",
         "description": "constants",
-        "peekOfCode": "MODEL_GOLDUNIT = 10",
+        "peekOfCode": "MODEL_GOLDUNIT = 10\nSPEED = 1400",
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "SPEED",
+        "kind": 5,
+        "importPath": "constants",
+        "description": "constants",
+        "peekOfCode": "SPEED = 1400",
         "detail": "constants",
         "documentation": {}
     },
@@ -217,6 +268,15 @@
         "description": "model",
         "peekOfCode": "class Model:\n    def __init__(\n        self,\n        alpha=MODEL_ALPHA,\n        goldunit=MODEL_GOLDUNIT,\n        crops_used=CROPS_USED,\n    ):\n        self._df = pd.read_csv(\"./data/data.csv\")\n        self.alpha = alpha\n        self.goldunit = goldunit",
         "detail": "model",
+        "documentation": {}
+    },
+    {
+        "label": "clock",
+        "kind": 5,
+        "importPath": "test",
+        "description": "test",
+        "peekOfCode": "clock = Clock()",
+        "detail": "test",
         "documentation": {}
     }
 ]
