@@ -6,6 +6,12 @@ from typing import List, Optional
 from pydantic import BaseModel
 from chat_service import predict_disease, summarize_disease
 import numpy as np
+import urllib.request
+import json
+import openmeteo_requests
+import requests_cache
+import pandas as pd
+from retry_requests import retry
 
 import tensorflow as tf
 
@@ -171,30 +177,182 @@ def init_game(request: InitRequest):
     }
 
 
-@app.post("/init_by_location")
-def init_by_location(lat: float, lng: float):
-    """Initialize game based on geographic coordinates"""
-    global game_state
+class LocationInitRequest(BaseModel):
+    lat: float
+    lng: float
 
-    # Approximate elevation from latitude (simplified for Nepal)
-    # Southern Nepal (Terai) ~100m, Central (Hilly) ~1000m, Northern (Himalayan) ~3000m
-    # Latitude roughly: Terai 26-27, Hilly 27-28, Himalayan 28-30
-    if lat < 27.5:
+def clean_value(val):
+    if isinstance(val, (int, float)):
+        return float(val)
+    if not isinstance(val, str):
+        return 0.0
+    # Remove common units
+    val = val.replace('kg/ha', '').replace('%', '').replace('ppm', '').strip()
+    try:
+        return float(val)
+    except ValueError:
+        return 0.0
+
+def initialize_grid_with_data(region: str, soil_data: dict, weather_data: dict = None) -> List[CellState]:
+    region_data = REGIONS.get(region, REGIONS["Hilly"])
+    grid = []
+    
+    # Extract and clean soil data
+    n_val = clean_value(soil_data.get("total_nitrogen", 0))
+    p_val = clean_value(soil_data.get("p2o5", 0))
+    k_val = clean_value(soil_data.get("potassium", 0))
+    ph_val = clean_value(soil_data.get("ph", 6.5))
+    
+    # Weather data
+    temp_val = region_data["temperature"]
+    print(temp_val)
+    rain_val = region_data["rainfall"]
+    print(rain_val)
+    wind_val = 0.0
+    
+    if weather_data:
+        temp_val = weather_data.get("temperature", temp_val)
+        rain_val = weather_data.get("rain", rain_val)
+        wind_val = weather_data.get("wind_speed", wind_val)
+
+    for _ in range(16):
+        cell = CellState(
+            temperature=temp_val,
+            humidity=region_data["humidity"],
+            rainfall=rain_val,
+            moisture=region_data["moisture"],
+            wind_speed=wind_val,
+            n=n_val,
+            p=p_val,
+            k=k_val,
+            ph=ph_val
+        )
+        grid.append(cell)
+    return grid
+
+def fetch_weather_data(lat: float, lng: float):
+    try:
+        # Setup the Open-Meteo API client with cache and retry on error
+        cache_session = requests_cache.CachedSession('.cache', expire_after = 3600)
+        retry_session = retry(cache_session, retries = 5, backoff_factor = 0.2)
+        openmeteo = openmeteo_requests.Client(session = retry_session)
+
+        # Make sure all required weather variables are listed here
+        # The order of variables in hourly or daily is important to assign them correctly below
+        url = "https://api.open-meteo.com/v1/forecast"
+        params = {
+            "latitude": lat,
+            "longitude": lng,
+            "hourly": ["temperature_2m", "rain", "wind_speed_80m", "cloud_cover"],
+            "timezone": "auto",
+        }
+        responses = openmeteo.weather_api(url, params=params)
+
+        # Process first location
+        response = responses[0]
+        elevation = response.Elevation()
+        
+        # Process hourly data. The order of variables needs to be the same as requested.
+        hourly = response.Hourly()
+        hourly_temperature_2m = hourly.Variables(0).ValuesAsNumpy()
+        hourly_rain = hourly.Variables(1).ValuesAsNumpy()
+        hourly_wind_speed_80m = hourly.Variables(2).ValuesAsNumpy()
+        hourly_cloud_cover = hourly.Variables(3).ValuesAsNumpy()
+
+        hourly_data = {"date": pd.date_range(
+            start = pd.to_datetime(hourly.Time(), unit = "s", utc = True),
+            end = pd.to_datetime(hourly.TimeEnd(), unit = "s", utc = True),
+            freq = pd.Timedelta(seconds = hourly.Interval()),
+            inclusive = "left"
+        )}
+
+        hourly_data["temperature_2m"] = hourly_temperature_2m
+        hourly_data["rain"] = hourly_rain
+        hourly_data["wind_speed_80m"] = hourly_wind_speed_80m
+        hourly_data["cloud_cover"] = hourly_cloud_cover
+
+        hourly_dataframe = pd.DataFrame(data = hourly_data)
+        
+        # Use the first row (current hour) as the weather data
+        current = hourly_dataframe.iloc[0]
+        
+        return {
+            "temperature": float(current["temperature_2m"]),
+            "rain": float(current["rain"]),
+            "wind_speed": float(current["wind_speed_80m"]),
+            "cloud_cover": float(current["cloud_cover"]),
+            "elevation": elevation
+        }
+    except Exception as e:
+        print(f"Error fetching weather data: {e}")
+        return None
+
+@app.get("/weather")
+def get_weather_data(lat: float, lng: float):
+    """Get weather data and region for a location"""
+    data = fetch_weather_data(lat, lng)
+    if not data:
+        raise HTTPException(status_code=500, detail="Failed to fetch weather data")
+    
+    # Determine region
+    region = get_region_from_elevation(data["elevation"])
+    
+    return {
+        "weather": data,
+        "region": region
+    }
+
+@app.post("/init_by_location")
+def init_by_location(request: LocationInitRequest):
+    """Initialize game based on geographic coordinates using external API"""
+    global game_state
+    
+    lat = request.lat
+    lng = request.lng
+    
+    # Fetch soil data
+    url = f"https://soil.narc.gov.np/soil/api/?lat={lat}&lon={lng}"
+    data = {}
+    try:
+        with urllib.request.urlopen(url) as response:
+            if response.status == 200:
+                data = json.loads(response.read().decode())
+    except Exception as e:
+        print(f"Error fetching soil data: {e}")
+    
+    # Fetch weather data
+    weather_data = fetch_weather_data(lat, lng)
+
+    # Determine region from API elevation if available, else fallback
+    elevation = 1000 # Default
+    if "coord" in data and "elevation" in data["coord"]:
+        elevation = data["coord"]["elevation"]
+    elif lat < 27.5:
         elevation = 150
-        region = "Terai"
     elif lat < 28.5:
         elevation = 1200
-        region = "Hilly"
     else:
         elevation = 3500
-        region = "Himalayan"
+        
+    region = get_region_from_elevation(elevation)
+    
+    # Initialize grid
+    if data:
+        grid = initialize_grid_with_data(region, data, weather_data)
+        events = [f"Farm started at elevation {elevation}m ({region}) with soil data from NARC"]
+    else:
+        grid = initialize_grid(region) # Fallback to default if no soil data
+        events = [f"Farm started at elevation {elevation}m ({region}) (Soil data unavailable)"]
+    
+    if weather_data:
+        events.append(f"Weather: {weather_data['temperature']:.1f}°C, Rain: {weather_data['rain']:.1f}mm, Wind: {weather_data['wind_speed']:.1f}km/h")
 
     game_state = GameState(
         region=region,
         location=f"Lat: {lat:.2f}, Lng: {lng:.2f}",
         gold=1000,
         day=1,
-        grid=initialize_grid(region),
+        grid=grid
     )
 
     return {
@@ -203,7 +361,7 @@ def init_by_location(lat: float, lng: float):
         "day": game_state.day,
         "region": region,
         "elevation": elevation,
-        "events": [f"Farm started at elevation {elevation}m ({region})"],
+        "events": events
     }
 
 
