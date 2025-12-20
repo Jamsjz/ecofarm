@@ -15,7 +15,7 @@ const STAGE = { SEED: 'Seed', SPROUT: 'Sprout', MATURE: 'Mature' };
 const ACTION = { WATER: 'Water', INSECTICIDE: 'Insecticide', PESTICIDE: 'Pesticide' };
 const NURSERY = [
     { species: 'Rice', emoji: '🌾', diff: 3, pref: BIOME.TERAI },
-    { species: 'Maize', emoji: '玉米', diff: 2, pref: BIOME.HILLY },
+    { species: 'Maize', emoji: '🌽', diff: 2, pref: BIOME.HILLY },
     { species: 'Banana', emoji: '🍌', diff: 3, pref: BIOME.TERAI },
     { species: 'Mango', emoji: '🥭', diff: 3, pref: BIOME.TERAI },
     { species: 'Apple', emoji: '🍎', diff: 4, pref: BIOME.MOUNTAIN },
@@ -27,18 +27,18 @@ const NURSERY = [
 ];
 
 const CROP_PROFILES = {
-    Rice: { daysToMature: 120, waterEvery: 50, waterEveryDrought: 35, insecticideEveryDays: 14, pesticideEveryDays: 21 },
-    Maize: { daysToMature: 100, waterEvery: 160, waterEveryDrought: 110, insecticideEveryDays: 21, pesticideEveryDays: 28 },
-    Banana: { daysToMature: 180, waterEvery: 140, waterEveryDrought: 90, insecticideEveryDays: 21, pesticideEveryDays: 28 },
-    Mango: { daysToMature: 180, waterEvery: 220, waterEveryDrought: 140, insecticideEveryDays: 21, pesticideEveryDays: 28 },
-    Apple: { daysToMature: 200, waterEvery: 420, waterEveryDrought: 260, insecticideEveryDays: 28, pesticideEveryDays: 35 },
-    Jute: { daysToMature: 140, waterEvery: 160, waterEveryDrought: 100, insecticideEveryDays: 14, pesticideEveryDays: 21 },
-    Papaya: { daysToMature: 160, waterEvery: 140, waterEveryDrought: 90, insecticideEveryDays: 14, pesticideEveryDays: 21 },
-    Lentil: { daysToMature: 110, waterEvery: 200, waterEveryDrought: 130, insecticideEveryDays: 14, pesticideEveryDays: 21 },
-    Orange: { daysToMature: 180, waterEvery: 220, waterEveryDrought: 140, insecticideEveryDays: 21, pesticideEveryDays: 28 },
-    Cotton: { daysToMature: 150, waterEvery: 160, waterEveryDrought: 100, insecticideEveryDays: 21, pesticideEveryDays: 28 },
+    Rice: { daysToMature: 12, waterEvery: 50, waterEveryDrought: 35, insecticideEveryDays: 4, pesticideEveryDays: 6 },
+    Maize: { daysToMature: 10, waterEvery: 60, waterEveryDrought: 40, insecticideEveryDays: 4, pesticideEveryDays: 6 },
+    Banana: { daysToMature: 18, waterEvery: 60, waterEveryDrought: 40, insecticideEveryDays: 6, pesticideEveryDays: 8 },
+    Mango: { daysToMature: 18, waterEvery: 80, waterEveryDrought: 50, insecticideEveryDays: 6, pesticideEveryDays: 8 },
+    Apple: { daysToMature: 20, waterEvery: 80, waterEveryDrought: 50, insecticideEveryDays: 7, pesticideEveryDays: 9 },
+    Jute: { daysToMature: 14, waterEvery: 50, waterEveryDrought: 35, insecticideEveryDays: 5, pesticideEveryDays: 7 },
+    Papaya: { daysToMature: 16, waterEvery: 60, waterEveryDrought: 40, insecticideEveryDays: 5, pesticideEveryDays: 7 },
+    Lentil: { daysToMature: 11, waterEvery: 60, waterEveryDrought: 40, insecticideEveryDays: 4, pesticideEveryDays: 6 },
+    Orange: { daysToMature: 18, waterEvery: 80, waterEveryDrought: 50, insecticideEveryDays: 6, pesticideEveryDays: 8 },
+    Cotton: { daysToMature: 15, waterEvery: 60, waterEveryDrought: 40, insecticideEveryDays: 5, pesticideEveryDays: 7 },
 };
-const defaultCropProfile = { daysToMature: 100, waterEvery: 180, waterEveryDrought: 120, insecticideEveryDays: 21, pesticideEveryDays: 28 };
+const defaultCropProfile = { daysToMature: 12, waterEvery: 60, waterEveryDrought: 40, insecticideEveryDays: 5, pesticideEveryDays: 7 };
 const cropProfileFor = (species) => CROP_PROFILES[species] || defaultCropProfile;
 
 const BACKEND_ACTIONS = {
@@ -123,6 +123,15 @@ const BACKEND_ACTIONS = {
         "durationTicks": 13,
         "icon": "🌾"
     },
+    "remove_crop": {
+        "name": "Remove Crop",
+        "cost": { "Terai": 20, "Hilly": 25, "Himalayan": 30 },
+        "effect": {},
+        "desc": "Remove unwanted crops from the field.",
+        "duration": "Low (1h)",
+        "durationTicks": 2,
+        "icon": "🗑️"
+    },
 };
 
 const BACKEND_CROPS = {
@@ -171,7 +180,7 @@ const BACKEND_CROPS = {
 const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
 const uid = () => (globalThis.crypto?.randomUUID ? globalThis.crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`);
 const stageFrom = (p) => (p < 35 ? STAGE.SEED : p < 75 ? STAGE.SPROUT : STAGE.MATURE);
-const DAY_TICKS = 20; // Reduced from 101 for faster simulation (each day = 20 ticks)
+const DAY_TICKS = 100; // Synced with tod loop (0-99) for correct globalTick calculation
 
 function detectBiome(raw) {
     const q = String(raw || '').toLowerCase();
@@ -221,16 +230,6 @@ export default function Home() {
     const [running, setRunning] = React.useState(false);
     const [speedIdx, setSpeedIdx] = React.useState(1);
 
-    // Moved State Definitions to Top to fix ReferenceError
-    const [carePrompt, setCarePrompt] = React.useState(null);
-    const [careNow, setCareNow] = React.useState(0);
-    const [sliderValue, setSliderValue] = React.useState(-1);
-
-    const carePromptRef = React.useRef(carePrompt);
-    React.useEffect(() => {
-        carePromptRef.current = carePrompt;
-    }, [carePrompt]);
-
     const dayRef = React.useRef(day);
     React.useEffect(() => {
         dayRef.current = day;
@@ -239,91 +238,6 @@ export default function Home() {
     React.useEffect(() => {
         todRef.current = tod;
     }, [tod]);
-
-    // Care prompt timer - pauses simulation for 20 seconds, then auto-resumes
-    React.useEffect(() => {
-        if (!carePrompt) return;
-        setCareNow(Date.now());
-        const timer = setInterval(() => {
-            const now = Date.now();
-            setCareNow(now);
-            // When 20sec timer expires, clear prompt and resume simulation
-            const dueAt = Number(carePrompt?.dueAtMs) || 0;
-            if (now >= dueAt) {
-                setCarePrompt(null);
-                setSliderValue(-1);
-                // Auto-resume simulation after 20 seconds
-                setRunning(true);
-                setToast('Care time expired - simulation resumed. Plant may suffer!');
-            }
-        }, 1000);
-        return () => clearInterval(timer);
-    }, [carePrompt?.plantIndex, carePrompt?.dueAtMs]);
-
-    const applyCare = React.useCallback(() => {
-        if (!carePrompt) return;
-        const val = sliderValue;
-        if (val === -1) return;
-
-        const isMedium = val >= 40 && val <= 60;
-        const targetIdx = carePrompt.plantIndex;
-        const actionKey = String(carePrompt.action || '').toLowerCase();
-        const globalTick = dayRef.current * DAY_TICKS + todRef.current;
-
-        let killed = false;
-        let strikeCount = 0;
-        setGrid((g) => {
-            const ng = [...g];
-            const p = ng[targetIdx];
-            if (!p || p.isDead) return g;
-
-            if (isMedium) {
-                ng[targetIdx] = {
-                    ...p,
-                    health: clamp(p.health + 15, 0, 100),
-                    requiredAction: '',
-                    careDueAtMs: 0,
-                    lastCareTick: { ...(p.lastCareTick || {}), [actionKey]: globalTick },
-                    stressStrikes: 0,
-                };
-                return ng;
-            }
-
-            const newStrikes = (p.stressStrikes || 0) + 1;
-            strikeCount = newStrikes;
-            const dmg = val < 40 ? 30 : 40;
-            const nextHealth = clamp(p.health - dmg, 0, 100);
-            if (newStrikes >= 2 || nextHealth <= 0) {
-                killed = true;
-                ng[targetIdx] = { ...p, isDead: true, health: 0, deathCharged: true };
-                return ng;
-            }
-
-            ng[targetIdx] = {
-                ...p,
-                health: nextHealth,
-                requiredAction: '',
-                careDueAtMs: 0,
-                lastCareTick: { ...(p.lastCareTick || {}), [actionKey]: globalTick },
-                stressStrikes: newStrikes,
-            };
-            return ng;
-        });
-
-        if (isMedium) {
-            setToast(`✓ Perfect! Medium ${carePrompt.action} applied. Plant is thriving!`);
-        } else if (killed) {
-            setToast(`✗ Plant died! Too many care errors. Choice: ${val}%.`);
-            setCoins((c) => Math.max(0, c - 5));
-        } else {
-            const type = val < 40 ? 'Under-care' : 'Over-care';
-            setToast(`⚠️ ${type} warning! Plant stressed (${val}%). Strike ${strikeCount}/2.`);
-        }
-
-        setCarePrompt(null);
-        setSliderValue(-1);
-        if (carePrompt.resumeRunning) setRunning(true);
-    }, [carePrompt, sliderValue]);
 
     const [loc, setLoc] = React.useState('Kathmandu');
     const [biome, setBiome] = React.useState(BIOME.HILLY);
@@ -395,8 +309,8 @@ export default function Home() {
         speedIdxRef.current = speedIdx;
     }, [speedIdx]);
     const [toast, setToast] = React.useState('Drag crops from Nursery into the 4x4 field.');
-    const [coins, setCoins] = React.useState(1000);
-    const coinsRef = React.useRef(1000);
+    const [coins, setCoins] = React.useState(2000);
+    const coinsRef = React.useRef(2000);
     React.useEffect(() => {
         coinsRef.current = coins;
     }, [coins]);
@@ -443,6 +357,8 @@ export default function Home() {
     ]);
     const [chatInput, setChatInput] = React.useState('');
     const [chatBusy, setChatBusy] = React.useState(false);
+    const [recentActions, setRecentActions] = React.useState([]);
+    const recentActionsRef = React.useRef([]);
     const [selectedCrop, setSelectedCrop] = React.useState('');
     const [nurseryOpen, setNurseryOpen] = React.useState(false);
     const nurseryRef = React.useRef(null);
@@ -843,78 +759,18 @@ export default function Home() {
     }, [biome, temp]);
 
     const advanceSimulationStep = React.useCallback(() => {
-        // Simulation continues even with care prompts - no longer pausing
-
         const { sun: s, rain: r, biome: b, temp: tt, wx: wxx } = envRef.current;
         const drought = s > 80 && r < 20;
 
-        const humidity = Number(wxx?.humidity);
-        const humidPct = Number.isFinite(humidity) ? clamp(humidity, 0, 100) : clamp(Math.round(r + (r >= 55 ? 18 : 0)), 0, 100);
-        const humid = humidPct >= 70;
-
-        const globalTick = dayRef.current * DAY_TICKS + todRef.current;
-
-        // Check for care needs and mark plants (but don't pause simulation)
-        let newCareNeeded = null;
-        for (let plantIndex = 0; plantIndex < gridRef.current.length; plantIndex += 1) {
-            const p = gridRef.current[plantIndex];
-            if (!p || p.isDead) continue;
-            // Skip if already has a pending action
-            if (String(p.requiredAction || '')) continue;
-
-            const profile = cropProfileFor(p.species);
-            const lastCareTick = p.lastCareTick || {};
-
-            const gp = Number.isFinite(p.growthProgress) ? p.growthProgress : 0;
-            const waterEvery = drought ? profile.waterEveryDrought : profile.waterEvery;
-            const lastWater = Number.isFinite(lastCareTick.water) ? lastCareTick.water : globalTick;
-            if (r < 70 && globalTick - lastWater >= waterEvery) {
-                newCareNeeded = { plantIndex, action: ACTION.WATER };
-                break;
-            }
-
-            const insectEvery = Math.round(profile.insecticideEveryDays * DAY_TICKS * (humid ? 0.85 : 1));
-            const lastInsect = Number.isFinite(lastCareTick.insecticide) ? lastCareTick.insecticide : globalTick;
-            if (gp >= 35 && globalTick - lastInsect >= insectEvery) {
-                newCareNeeded = { plantIndex, action: ACTION.INSECTICIDE };
-                break;
-            }
-
-            const pestEvery = Math.round(profile.pesticideEveryDays * DAY_TICKS * (humid ? 0.85 : 1));
-            const lastPest = Number.isFinite(lastCareTick.pesticide) ? lastCareTick.pesticide : globalTick;
-            if (gp >= 65 && globalTick - lastPest >= pestEvery) {
-                newCareNeeded = { plantIndex, action: ACTION.PESTICIDE };
-                break;
-            }
-        }
-
-        // If new care is needed and no current prompt, pause simulation for 20 seconds
-        if (newCareNeeded && !carePromptRef.current) {
-            const expiresAtMs = Date.now() + 20000; // 20 second timer
-            setGrid((prev) =>
-                prev.map((p, idx) => {
-                    if (idx !== newCareNeeded.plantIndex) return p;
-                    if (!p || p.isDead) return p;
-                    return { ...p, requiredAction: newCareNeeded.action, careDueAtMs: expiresAtMs };
-                }),
-            );
-            setCarePrompt({ ...newCareNeeded, dueAtMs: expiresAtMs, resumeRunning: false });
-            setToast(`⚠️ Care needed: ${newCareNeeded.action}! Crops continue growing but with penalties.`);
-            setSliderValue(-1);
-            // DON'T pause simulation - let plants grow with penalty
-            // setRunning(false);
-        }
-
         let rolled = false;
         let deaths = 0;
-        let pendingAny = false;
         let matureAll = true;
         let aliveAny = false;
 
         setTod((prev) => {
             const next = prev + 1;
 
-            if (next > 100) {
+            if (next >= 100) {
                 rolled = true;
                 setDay((d) => d + 1);
                 return 0;
@@ -938,16 +794,6 @@ export default function Home() {
                 let deathCharged = Boolean(p.deathCharged);
                 let health = p.health;
 
-                // Plants with pending care continue growing but with penalties
-                const hasPendingCare = String(p.requiredAction || '');
-                let careNeglectPenalty = 1; // growth rate multiplier
-                let careHealthDamage = 0; // per-tick health loss
-                if (hasPendingCare) {
-                    pendingAny = true;
-                    careNeglectPenalty = 0.3; // 70% slower growth when neglected
-                    careHealthDamage = 0.5; // lose health per tick when care is neglected
-                }
-
                 const profile = cropProfileFor(p.species);
                 const baseGrowthDays = Number.isFinite(p.growthDays)
                     ? p.growthDays
@@ -957,17 +803,13 @@ export default function Home() {
 
                 let growthDays = baseGrowthDays;
                 const deltaDays = 1 / DAY_TICKS;
-                // Speed multiplier: Fast=30x, Medium=15x, Slow=5x (much faster growth)
-                const speedMultiplier = speedIdxRef.current === 2 ? 30 : speedIdxRef.current === 1 ? 15 : 5;
-                let rate = 1.5 * speedMultiplier * careNeglectPenalty; // Base rate 1.5x
-                if (p.preferredBiome === b2) rate *= 1.3;
-                if (tt2 <= 8) rate *= 0.8;
-                const healthFactor = 0.7 + (health / 100) * 0.3; // Min 70% growth even at low health
-                growthDays = clamp(growthDays + deltaDays * rate * healthFactor, 0, profile.daysToMature);
+                // Rate 1.0 means 1 growth day per 1 simulation day.
+                let rate = 1.0;
+                
+                // Pure time-based growth
+                growthDays = clamp(growthDays + deltaDays * rate, 0, profile.daysToMature);
                 const gp = clamp((growthDays / profile.daysToMature) * 100, 0, 100);
 
-                // Apply care neglect damage
-                health -= careHealthDamage;
                 // Apply environmental effects
                 if (drought2) health -= 0.45;
                 else if (drowning2) health -= 0.35;
@@ -993,9 +835,6 @@ export default function Home() {
                     growthDays,
                     growthProgress: gp,
                     growthStage: stage,
-                    // Keep pending care action, only clear if no pending care
-                    requiredAction: hasPendingCare ? p.requiredAction : '',
-                    careDueAtMs: hasPendingCare ? p.careDueAtMs : 0,
                     deathCharged,
                 };
             });
@@ -1006,7 +845,7 @@ export default function Home() {
             setToast(`Crops died (-${deaths * 5} coins).`);
         }
 
-        if (!pendingAny && aliveAny && matureAll && !matureStopRef.current) {
+        if (aliveAny && matureAll && !matureStopRef.current) {
             matureStopRef.current = true;
             setRunning(false);
             setToast('All crops are fully grown — harvest now to earn coins.');
@@ -1140,9 +979,6 @@ export default function Home() {
                     isDead: dead,
                     preferredBiome: meta.pref,
                     emoji: meta.emoji,
-                    requiredAction: '',
-                    careDueAtMs: 0,
-                    lastCareTick: { water: globalTick, insecticide: globalTick, pesticide: globalTick },
                     deathCharged: false,
                     stressStrikes: 0, // Reset strikes
                 };
@@ -1232,9 +1068,6 @@ export default function Home() {
                         isDead: dead,
                         preferredBiome: meta.pref,
                         emoji: meta.emoji,
-                        requiredAction: '',
-                        careDueAtMs: 0,
-                        lastCareTick: { water: globalTick, insecticide: globalTick, pesticide: globalTick },
                         deathCharged: false, // Will be charged next tick if dead? Or effectively dead now.
                         stressStrikes: 0,
                     };
@@ -1259,7 +1092,67 @@ export default function Home() {
         [biome, selection, getSuitabilityScore],
     );
 
+    // Build game state for backend chat
+    const buildGameState = React.useCallback(() => {
+        return {
+            location: loc || biome,
+            region: biome,
+            gold: coins,
+            day: day,
+            grid: grid.map((p, i) => ({
+                n: 40 + (rain / 10),
+                p: 40,
+                k: 40,
+                rainfall: rain * 2.5,
+                ph: 6.5,
+                humidity: sun,
+                temperature: temp,
+                moisture: rain,
+                crop: p?.species || null,
+                stage: p?.growthProgress || 0,
+                max_stage: 100,
+                weed: 0,
+                health: p?.health || 100
+            }))
+        };
+    }, [loc, biome, coins, day, grid, rain, sun, temp]);
+
+    // Trigger auto chat after actions
+    const triggerAutoChat = React.useCallback(async (actionLog) => {
+        if (chatBusy) return;
+        setChatBusy(true);
+
+        try {
+            const res = await fetch(`${API_URL}/chat`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    message: null,
+                    recent_actions: [actionLog, ...recentActionsRef.current.slice(0, 4)],
+                    game_state: buildGameState()
+                }),
+            });
+            if (res.ok) {
+                const data = await res.json();
+                const reply = data?.response || '';
+                if (reply) {
+                    setChatMsgs((prev) => [...prev, { id: uid(), role: 'assistant', text: reply }]);
+                }
+            } else {
+                console.error('Auto-chat API error:', res.status);
+            }
+        } catch (err) {
+            console.error('Auto-chat fetch error:', err);
+        } finally {
+            setChatBusy(false);
+        }
+    }, [chatBusy, buildGameState]);
+
     const handleBackendAction = React.useCallback(async (actionKey) => {
+        if (!running) {
+            setToast('⚠️ Start simulation to perform actions.');
+            return;
+        }
         const actionDef = BACKEND_ACTIONS[actionKey];
         if (!actionDef) return;
         if (actionBusy) return;
@@ -1318,9 +1211,16 @@ export default function Home() {
 
             // If cell is empty (p is null)
             if (!p) {
-                if (!['harvest', 'irrigate'].includes(actionKey)) {
+                if (!['harvest', 'irrigate', 'remove_crop'].includes(actionKey)) {
                     result.affected++;
                 }
+                continue;
+            }
+
+            // --- Remove Crop ---
+            if (actionKey === 'remove_crop') {
+                nextGrid[idx] = null;
+                result.affected++;
                 continue;
             }
 
@@ -1350,13 +1250,9 @@ export default function Home() {
             // --- Irrigation (Watering) ---
             if (actionKey === 'irrigate') {
                 result.affected++;
-                const clears = String(p.requiredAction || '') === ACTION.WATER;
                 nextGrid[idx] = {
                     ...p,
                     health: clamp(p.health + 10, 0, 100),
-                    requiredAction: clears ? '' : p.requiredAction,
-                    careDueAtMs: clears ? 0 : p.careDueAtMs,
-                    lastCareTick: { ...(p.lastCareTick || {}), water: globalTick },
                 };
                 continue;
             }
@@ -1414,21 +1310,17 @@ export default function Home() {
             setCoins(coinsRef.current);
 
             setToast(`${actionDef.icon} ${actionDef.name} applied (-${totalOperationalCost}g)`);
-
-            // Check care prompts
-            if (actionKey === 'irrigate') {
-                const cp = carePromptRef.current;
-                if (cp?.action === ACTION.WATER) {
-                    setCarePrompt(null);
-                    setSliderValue(-1);
-                    if (cp?.resumeRunning) setRunning(true);
-                }
-            }
         }
         setActionBusy(null);
         void fetchRecommendations(); // Auto-refresh recommendations
 
-    }, [biome, selection, advanceSimulationStep, actionBusy, fetchRecommendations]);
+        // Log action for chat context and trigger auto-response
+        const actionLog = `${actionDef.name} applied to ${selection.size} cells (Day ${dayRef.current})`;
+        recentActionsRef.current = [actionLog, ...recentActionsRef.current.slice(0, 9)];
+        setRecentActions(recentActionsRef.current);
+        triggerAutoChat(actionLog);
+
+    }, [biome, selection, advanceSimulationStep, actionBusy, fetchRecommendations, running, triggerAutoChat]);
 
     const clearDead = React.useCallback(() => {
         let cleared = 0;
@@ -1453,12 +1345,6 @@ export default function Home() {
     const jitter = (p) => wind > 50 && rain > 70 && p && !p.isDead;
     const scale = (p) => (p?.growthStage === STAGE.SEED ? 0.9 : p?.growthStage === STAGE.SPROUT ? 1.02 : 1.18);
 
-    const careSecondsLeft = React.useMemo(() => {
-        const dueAt = Number(carePrompt?.dueAtMs) || 0;
-        if (!dueAt) return 0;
-        return Math.max(0, Math.ceil((dueAt - careNow) / 1000));
-    }, [careNow, carePrompt?.dueAtMs]);
-
     const sendChat = React.useCallback(async () => {
         const text = String(chatInput || '').trim();
         if (!text || chatBusy) return;
@@ -1466,59 +1352,32 @@ export default function Home() {
         setChatMsgs((prev) => [...prev, { id: uid(), role: 'user', text }]);
         setChatBusy(true);
 
-        const drought = sun > 80 && rain < 20;
-        const drowning = rain > 80;
-        const fallback = () => {
-            const t = text.toLowerCase();
-            if (t.includes('stats') || t.includes('health')) {
-                return `Field Stats → Avg health ${Math.round(avgHealth)}. Alive ${alive}/${total}. Sun ${Math.round(sun)} Rain ${Math.round(rain)} Wind ${Math.round(wind)}.`;
-            }
-            if (t.includes('biome') || t.includes('location')) {
-                return `Current biome is ${biome}. Matching-biome crops grow 1.5x faster. Try keywords: Kathmandu/Pokhara/Ilam (Hilly), Chitwan/Lumbini/Biratnagar (Terai), Mustang/Manang/Solukhumbu (Mountain).`;
-            }
-            if (t.includes('advice') || t.includes('help') || t.includes('how')) {
-                if (drought) return 'Drought risk detected. Increase Rain (or Water All) and reduce Sun below 80 to prevent health loss.';
-                if (drowning) return 'Drowning risk detected. Reduce Rain below 80; add Wind to lean rain and help canopy drying.';
-                return `Stable conditions. Keep Sun ~55–75, Rain ~35–70. In ${biome}, matching crops get 1.5x growth speed.`;
-            }
-            return 'Ask for “advice”, “stats”, or “biome”.';
-        };
-
         try {
-            const proxyUrl = import.meta?.env?.VITE_GEMINI_PROXY_URL;
-            if (proxyUrl) {
-                const res = await fetch(proxyUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        text,
-                        biome,
-                        day,
-                        timeOfDay: tod,
-                        env: { sun, rain, wind, temperature: temp },
-                        field: { avgHealth, alive, total },
-                    }),
-                });
+            const res = await fetch(`${API_URL}/chat`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    message: text,
+                    recent_actions: recentActionsRef.current.slice(0, 5),
+                    game_state: buildGameState()
+                }),
+            });
+            if (res.ok) {
                 const data = await res.json();
-                const reply = data?.reply || data?.advice || data?.text || '';
-                setChatMsgs((prev) => [...prev, { id: uid(), role: 'assistant', text: reply || fallback() }]);
+                const reply = data?.response || '';
+                setChatMsgs((prev) => [...prev, { id: uid(), role: 'assistant', text: reply || 'No response from lab assistant.' }]);
             } else {
-                await new Promise((r) => setTimeout(r, 250));
-                setChatMsgs((prev) => [...prev, { id: uid(), role: 'assistant', text: fallback() }]);
+                const errText = await res.text();
+                console.error('Chat API error:', res.status, errText);
+                setChatMsgs((prev) => [...prev, { id: uid(), role: 'assistant', text: `Error: Backend returned ${res.status}. Check if backend is running.` }]);
             }
-        } catch {
-            setChatMsgs((prev) => [
-                ...prev,
-                {
-                    id: uid(),
-                    role: 'assistant',
-                    text: 'Lab network issue. Set VITE_GEMINI_PROXY_URL to enable Gemini, otherwise use offline advice.',
-                },
-            ]);
+        } catch (err) {
+            console.error('Chat fetch error:', err);
+            setChatMsgs((prev) => [...prev, { id: uid(), role: 'assistant', text: `Error: Could not connect to backend. Make sure the server is running on ${API_URL}` }]);
         } finally {
             setChatBusy(false);
         }
-    }, [alive, avgHealth, biome, chatBusy, chatInput, day, rain, sun, temp, tod, total, wind]);
+    }, [chatBusy, chatInput, buildGameState]);
 
     return (
         <div className="relative h-screen flex flex-col w-full text-white overflow-hidden" style={{ background: bgDay }}>
@@ -1546,21 +1405,16 @@ export default function Home() {
                             <div className="flex items-center gap-2 text-sm font-semibold"><Leaf className="h-5 w-5" />Field Stats</div>
                             <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
                                 <div className="rounded-xl bg-white/10 p-3 ring-1 ring-white/10"><div className="text-[11px] opacity-70">Avg health</div><div className="mt-1 text-xl font-semibold">{Math.round(avgHealth)}</div></div>
-                                <div className="rounded-xl bg-white/10 p-3 ring-1 ring-white/10"><div className="text-[11px] opacity-70">Plants</div><div className="mt-1 text-xl font-semibold">{alive}/{total}</div></div>
                                 <div className="rounded-xl bg-white/10 p-3 ring-1 ring-white/10"><div className="text-[11px] opacity-70">Temp</div><div className="mt-1 text-xl font-semibold">{Math.round(temp)}°C</div></div>
                                 <div className="rounded-xl bg-white/10 p-3 ring-1 ring-white/10"><div className="text-[11px] opacity-70">Rain</div><div className="mt-1 text-xl font-semibold">{Math.round(rain)}mm</div></div>
                                 <div className="rounded-xl bg-white/10 p-3 ring-1 ring-white/10"><div className="text-[11px] opacity-70">Wind</div><div className="mt-1 text-xl font-semibold">{Math.round(wind)}km/h</div></div>
-                                <div className="rounded-xl bg-white/10 p-3 ring-1 ring-white/10"><div className="text-[11px] opacity-70">Sun</div><div className="mt-1 text-xl font-semibold">{Math.round(sun)}%</div></div>
-                            </div>
-                            <div className="mt-3 rounded-xl bg-white/10 p-3 text-[12px] ring-1 ring-white/10">
-                                <div className="flex items-center justify-between"><div className="flex items-center gap-2"><MapPin className="h-4 w-4" />{biome}</div><div className="font-semibold">{temp}°C</div></div>
                             </div>
                         </div>
 
                         <div className={`flex min-h-0 flex-1 flex-col rounded-2xl p-3 ${glass}`}>
                             <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2 text-sm font-semibold tracking-wide"><FlaskConical className="h-5 w-5" />Laboratory Chat</div>
-                                <div className="text-[11px] opacity-70">Gemini-ready</div>
+                                <div className="flex items-center gap-2 text-sm font-semibold tracking-wide"><FlaskConical className="h-5 w-5" />EcoBot</div>
+                                <div className="text-[11px] opacity-70"></div>
                             </div>
                             <div className="mt-3 min-h-0 flex-1 overflow-hidden rounded-xl bg-white/10 ring-1 ring-white/10">
                                 <div className="h-full space-y-2 overflow-y-auto p-3">
@@ -1572,7 +1426,11 @@ export default function Home() {
                                                     : 'bg-white/10 ring-1 ring-white/10'
                                                     }`}
                                             >
-                                                {m.text}
+                                                {m.role === 'assistant' && window.markdown ? (
+                                                    <div dangerouslySetInnerHTML={{ __html: window.markdown.toHTML(m.text) }} />
+                                                ) : (
+                                                    m.text
+                                                )}
                                             </div>
                                         </div>
                                     ))}
@@ -1618,6 +1476,7 @@ export default function Home() {
                                     <div className="text-lg leading-none">💰</div>
                                     {coins}g
                                 </div>
+                                <div className="rounded-xl bg-white/10 px-3 py-2 text-sm ring-1 ring-white/10">{toast}</div>
                             </div>
 
                             <div className="relative" ref={nurseryRef}>
@@ -1631,6 +1490,20 @@ export default function Home() {
                                 {nurseryOpen && (
                                     <div className="absolute left-0 top-full z-20 mt-2 w-[280px] rounded-2xl bg-white/10 p-2 backdrop-blur-2xl ring-1 ring-white/20 shadow-[0_14px_50px_rgba(0,0,0,0.35)]">
                                         <div className="space-y-1">
+                                            <div
+                                                role="button"
+                                                tabIndex={0}
+                                                onClick={() => {
+                                                    setSelectedCrop('');
+                                                    setNurseryOpen(false);
+                                                }}
+                                                className="flex cursor-pointer select-none items-center justify-between rounded-xl bg-white/10 px-3 py-2 text-sm ring-1 ring-white/10 hover:bg-white/15"
+                                            >
+                                                <div className="flex items-center gap-2">
+                                                    <div className="text-lg leading-none">🚫</div>
+                                                    <div className="font-semibold">None</div>
+                                                </div>
+                                            </div>
                                             {NURSERY.map((n) => (
                                                 <div
                                                     key={`pick-${n.species}`}
@@ -1687,10 +1560,6 @@ export default function Home() {
                                         const canStart = grid.some(Boolean) && String(loc || '').trim().length > 0;
                                         if (!running && !canStart) {
                                             setToast('Setup first: enter a location and plant at least one crop before starting simulation.');
-                                            return;
-                                        }
-                                        if (!running && carePromptRef.current) {
-                                            setToast('Care required — complete the required action before starting simulation.');
                                             return;
                                         }
                                         setRunning((v) => {
@@ -1841,11 +1710,6 @@ export default function Home() {
                                                     </div>
                                                     <div className="text-[11px] font-semibold">{p.species}</div>
                                                     <div className="text-[10px] opacity-80">{p.isDead ? 'Dead' : `${p.growthStage} · ${Math.round(p.growthProgress)}%`}</div>
-                                                    {!!String(p.requiredAction || '') && !p.isDead && (
-                                                        <div className="mt-1 rounded-lg bg-rose-500/15 px-2 py-1 text-[10px] font-semibold ring-1 ring-rose-200/20">
-                                                            {p.requiredAction} in {Math.max(1, Math.ceil(((Number(p.careDueAtMs) || 0) - careNow) / 1000))}
-                                                        </div>
-                                                    )}
                                                 </div>
                                             )}
                                             {actionBusy && selection.has(i) && (
@@ -1862,7 +1726,6 @@ export default function Home() {
                             </div>
                         </div>
 
-                        <div className="mt-3 rounded-xl bg-white/10 px-3 py-2 text-[12px] ring-1 ring-white/10">{toast}</div>
                         {/* Overlay removed as per user request to move busy state to cells */}
                     </main>
 
@@ -1889,44 +1752,6 @@ export default function Home() {
                         {/* Actions Section */}
                         <div className={`rounded-2xl p-3 ${glass}`}>
                             <div className="text-sm font-semibold tracking-wide">Actions</div>
-                            {carePrompt && (
-                                <div className="mt-3 rounded-xl bg-rose-500/10 p-3 ring-1 ring-rose-200/20">
-                                    <div className="flex items-center justify-between text-[12px]">
-                                        <div className="font-semibold">Care Required</div>
-                                        <div className="font-extrabold text-rose-200">{careSecondsLeft}s</div>
-                                    </div>
-                                    <div className="mt-1 text-[11px] opacity-80">
-                                        Plant #{carePrompt.plantIndex + 1} needs <span className="font-semibold">{carePrompt.action}</span>
-                                    </div>
-                                    <div className="mt-3">
-                                        <div className="mb-1 flex justify-between text-[10px] opacity-70">
-                                            <span>Low</span>
-                                            <span>Medium (Safe)</span>
-                                            <span>High</span>
-                                        </div>
-                                        <input
-                                            type="range"
-                                            min="0"
-                                            max="100"
-                                            value={sliderValue}
-                                            onChange={(e) => setSliderValue(Number(e.target.value))}
-                                            className="w-full accent-emerald-500 h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer"
-                                        />
-                                        {sliderValue !== -1 && (
-                                            <div className={`mt-1 text-[11px] font-bold ${sliderValue >= 40 && sliderValue <= 60 ? 'text-emerald-400' : 'text-rose-300'}`}>
-                                                {sliderValue < 40 ? 'Too Low!' : sliderValue > 60 ? 'Too High!' : 'Perfect Range'}
-                                            </div>
-                                        )}
-                                    </div>
-                                    <button
-                                        disabled={sliderValue === -1}
-                                        onClick={applyCare}
-                                        className="mt-3 w-full rounded-xl bg-emerald-500 py-2 text-sm font-bold text-white hover:bg-emerald-600 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        Apply {carePrompt.action}
-                                    </button>
-                                </div>
-                            )}
                             <div className="mt-3 grid grid-cols-2 gap-2">
                                 {Object.entries(BACKEND_ACTIONS).map(([key, action]) => (
                                     <button
@@ -1941,7 +1766,7 @@ export default function Home() {
                                             <div className="flex flex-col leading-none overflow-hidden w-full">
                                                 <span className="truncate w-full">{action.name}</span>
                                                 <div className="flex justify-between items-center w-full mt-1">
-                                                    <span className="text-[10px] opacity-60 font-mono">{action.cost[biome]}g</span>
+                                                    <span className="text-[10px] opacity-60 font-mono">{action.cost[biome]}💰</span>
                                                     <span className="text-[9px] opacity-50">{action.duration}</span>
                                                 </div>
                                             </div>
@@ -1981,7 +1806,7 @@ export default function Home() {
                                             <span className="font-semibold text-sm">{rec.crop}</span>
                                         </div>
                                         <span className={`text-sm font-bold ${i === 0 ? 'text-emerald-400' : i === 1 ? 'text-amber-400' : 'text-white/70'}`}>
-                                            {typeof rec.score === 'number' ? `${Math.round(rec.score)}g` : rec.score}
+                                            {typeof rec.score === 'number' ? `${Math.round(rec.score)}💰` : rec.score}
                                         </span>
                                     </div>
                                 ))}
