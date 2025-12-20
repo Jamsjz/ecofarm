@@ -123,6 +123,15 @@ const BACKEND_ACTIONS = {
         "durationTicks": 13,
         "icon": "🌾"
     },
+    "remove_crop": {
+        "name": "Remove Crop",
+        "cost": { "Terai": 20, "Hilly": 25, "Himalayan": 30 },
+        "effect": {},
+        "desc": "Remove unwanted crops from the field.",
+        "duration": "Low (1h)",
+        "durationTicks": 2,
+        "icon": "🗑️"
+    },
 };
 
 const BACKEND_CROPS = {
@@ -1260,6 +1269,10 @@ export default function Home() {
     );
 
     const handleBackendAction = React.useCallback(async (actionKey) => {
+        if (!running) {
+            setToast('⚠️ Start simulation to perform actions.');
+            return;
+        }
         const actionDef = BACKEND_ACTIONS[actionKey];
         if (!actionDef) return;
         if (actionBusy) return;
@@ -1318,9 +1331,16 @@ export default function Home() {
 
             // If cell is empty (p is null)
             if (!p) {
-                if (!['harvest', 'irrigate'].includes(actionKey)) {
+                if (!['harvest', 'irrigate', 'remove_crop'].includes(actionKey)) {
                     result.affected++;
                 }
+                continue;
+            }
+
+            // --- Remove Crop ---
+            if (actionKey === 'remove_crop') {
+                nextGrid[idx] = null;
+                result.affected++;
                 continue;
             }
 
@@ -1428,7 +1448,7 @@ export default function Home() {
         setActionBusy(null);
         void fetchRecommendations(); // Auto-refresh recommendations
 
-    }, [biome, selection, advanceSimulationStep, actionBusy, fetchRecommendations]);
+    }, [biome, selection, advanceSimulationStep, actionBusy, fetchRecommendations, running]);
 
     const clearDead = React.useCallback(() => {
         let cleared = 0;
@@ -1627,6 +1647,20 @@ export default function Home() {
                                 {nurseryOpen && (
                                     <div className="absolute left-0 top-full z-20 mt-2 w-[280px] rounded-2xl bg-white/10 p-2 backdrop-blur-2xl ring-1 ring-white/20 shadow-[0_14px_50px_rgba(0,0,0,0.35)]">
                                         <div className="space-y-1">
+                                            <div
+                                                role="button"
+                                                tabIndex={0}
+                                                onClick={() => {
+                                                    setSelectedCrop('');
+                                                    setNurseryOpen(false);
+                                                }}
+                                                className="flex cursor-pointer select-none items-center justify-between rounded-xl bg-white/10 px-3 py-2 text-sm ring-1 ring-white/10 hover:bg-white/15"
+                                            >
+                                                <div className="flex items-center gap-2">
+                                                    <div className="text-lg leading-none">🚫</div>
+                                                    <div className="font-semibold">None</div>
+                                                </div>
+                                            </div>
                                             {NURSERY.map((n) => (
                                                 <div
                                                     key={`pick-${n.species}`}

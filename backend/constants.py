@@ -267,4 +267,11 @@ ACTIONS = {
         "desc": "Cutting, collecting, and threshing or packing produce for market.",
         "duration": 4,
     },
+    "remove_crop": {
+        "name": "Remove Crop",
+        "cost": {"Terai": 20, "Hilly": 25, "Himalayan": 30},
+        "effect": {},
+        "desc": "Remove unwanted crops from the field.",
+        "duration": 1,
+    },
 }
