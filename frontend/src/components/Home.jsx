@@ -1369,15 +1369,15 @@ export default function Home() {
                                     {chatMsgs.map((m) => (
                                         <div key={m.id} className={m.role === 'user' ? 'text-right' : 'text-left'}>
                                             <div
-                                                className={`inline-block max-w-[92%] rounded-2xl px-3 py-2 text-sm leading-snug ${m.role === 'user'
+                                                className={`inline-block max-w-[92%] rounded-2xl px-3 py-2 text-sm leading-relaxed ${m.role === 'user'
                                                     ? 'bg-emerald-500/25 ring-1 ring-emerald-300/20'
                                                     : 'bg-white/10 ring-1 ring-white/10'
                                                     }`}
                                             >
                                                 {m.role === 'assistant' && window.markdown ? (
-                                                    <div dangerouslySetInnerHTML={{ __html: window.markdown.toHTML(m.text) }} />
+                                                    <div className="[&>p]:mb-3 [&>ul]:mb-3 [&>ol]:mb-3 [&>li]:ml-4 [&>li]:list-disc last:[&>*]:mb-0 [&>h1]:font-bold [&>h2]:font-bold [&>h3]:font-bold [&>strong]:text-emerald-200" dangerouslySetInnerHTML={{ __html: window.markdown.toHTML(m.text) }} />
                                                 ) : (
-                                                    m.text
+                                                    <div className="whitespace-pre-wrap">{m.text}</div>
                                                 )}
                                             </div>
                                         </div>
