@@ -293,7 +293,21 @@ export default function Home() {
     React.useEffect(() => {
         speedIdxRef.current = speedIdx;
     }, [speedIdx]);
-    const [toast, setToast] = React.useState('Drag crops from Nursery into the 4x4 field.');
+    const [toast, setToastState] = React.useState(null);
+    const toastTimeoutRef = React.useRef(null);
+
+    const setToast = React.useCallback((msg) => {
+        setToastState(msg);
+        if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+        toastTimeoutRef.current = setTimeout(() => {
+            setToastState(null);
+        }, 3000);
+    }, []);
+
+    React.useEffect(() => {
+        setToast('Drag crops from Nursery into the 4x4 field.');
+    }, [setToast]);
+
     const [coins, setCoins] = React.useState(2000);
     const coinsRef = React.useRef(2000);
     React.useEffect(() => {
@@ -1410,8 +1424,9 @@ export default function Home() {
                                     <div className="text-lg leading-none">💰</div>
                                     {coins}g
                                 </div>
-                                <div className="rounded-xl bg-white/10 px-3 py-2 text-sm ring-1 ring-white/10">{toast}</div>
                             </div>
+
+                            {/* Toast removed from here */}
 
                             <div className="relative" ref={nurseryRef}>
                                 <button
@@ -1664,7 +1679,17 @@ export default function Home() {
                     </main>
 
                     <aside className={`flex min-h-0 flex-col gap-3 rounded-2xl p-3 overflow-y-auto ${glass}`}>
-                        <div className={`rounded-2xl p-3 ${glass}`}>
+                        <div className={`rounded-2xl p-3 ${glass} relative`}>
+                            {toast && (
+                                <>
+                                    <style>{`@keyframes slideIn{from{transform:translateY(-10px);opacity:0}to{transform:translateY(0);opacity:1}} .toast-anim{animation:slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)}`}</style>
+                                    <div className="absolute top-2 right-2 z-[9999] max-w-[240px] toast-anim">
+                                        <div className="rounded-xl bg-slate-900/95 px-3 py-2 text-xs font-medium text-white shadow-xl ring-1 ring-white/10 backdrop-blur-md leading-snug">
+                                            {toast}
+                                        </div>
+                                    </div>
+                                </>
+                            )}
                             <div className="flex items-center gap-2 text-sm font-semibold"><MapPin className="h-5 w-5" />Location Map</div>
                             <div className="mt-3 overflow-hidden rounded-xl ring-1 ring-white/10">
                                 <div className="h-44 w-full">
