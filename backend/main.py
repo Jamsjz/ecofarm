@@ -1,7 +1,10 @@
-from fastapi import FastAPI, HTTPException
+import dataclasses
+from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+import io
 from typing import List, Optional
 from pydantic import BaseModel
+from chat_service import get_chat_response, analyze_disease_chat
 import numpy as np
 import urllib.request
 import json
@@ -10,10 +13,16 @@ import requests_cache
 import pandas as pd
 from retry_requests import retry
 
+import tensorflow as tf
+
 
 from game_engine.engine import (
-    CellState, GameState, BatchActionRequest, 
-    PlantRequest, RecommendRequest, InitRequest
+    CellState,
+    GameState,
+    BatchActionRequest,
+    PlantRequest,
+    RecommendRequest,
+    InitRequest,
 )
 from game_engine.clock import Clock
 from constants import GRID_WIDTH, CROPS, ACTIONS, REGIONS
@@ -42,7 +51,6 @@ class ChatRequest(BaseModel):
     game_state: Optional[dict] = None  # Frontend can send game state directly
 
 
-
 def get_region_from_elevation(elevation: float) -> str:
     """Determine region based on elevation in meters"""
     if elevation < 300:
@@ -66,7 +74,7 @@ def initialize_grid(region: str) -> List[CellState]:
             n=40 + np.random.randint(-10, 10),
             p=40 + np.random.randint(-10, 10),
             k=40 + np.random.randint(-10, 10),
-            ph=6.5 + np.random.uniform(-0.5, 0.5)
+            ph=6.5 + np.random.uniform(-0.5, 0.5),
         )
         grid.append(cell)
     return grid
@@ -74,14 +82,11 @@ def initialize_grid(region: str) -> List[CellState]:
 
 # ============== METADATA ENDPOINTS ==============
 
+
 @app.get("/meta")
 def get_meta():
     """Get game metadata: crops, actions, and regions"""
-    return {
-        "crops": CROPS,
-        "actions": ACTIONS,
-        "regions": REGIONS
-    }
+    return {"crops": CROPS, "actions": ACTIONS, "regions": REGIONS}
 
 
 @app.get("/regions")
@@ -104,6 +109,7 @@ def get_actions():
 
 # ============== TIME ENDPOINTS ==============
 
+
 @app.get("/time")
 def get_time():
     """Get current game time"""
@@ -116,18 +122,18 @@ def tick():
     global game_state
     if game_state is None:
         raise HTTPException(status_code=400, detail="Game not initialized")
-    
+
     # Advance day counter based on ticks
     game_state.day += 1
-    
+
     # Update each cell
     for cell in game_state.grid:
         # Natural moisture decay
         cell.moisture = max(0, cell.moisture - 2)
-        
+
         # Weed growth
         cell.weed = min(100, cell.weed + 1)
-        
+
         # Crop growth
         if cell.crop and cell.stage < cell.max_stage:
             growth_rate = 1
@@ -137,40 +143,37 @@ def tick():
             if cell.weed < 30:
                 growth_rate += 0.3
             cell.stage = min(cell.max_stage, cell.stage + int(growth_rate))
-    
+
     return {
         "grid": [cell.model_dump() for cell in game_state.grid],
         "gold": game_state.gold,
         "day": game_state.day,
-        "events": []
+        "events": [],
     }
 
 
 # ============== GAME STATE ENDPOINTS ==============
 
+
 @app.post("/init")
 def init_game(request: InitRequest):
     """Initialize a new game with specified region"""
     global game_state
-    
+
     region = request.region
     if region not in REGIONS:
         region = "Hilly"
-    
+
     game_state = GameState(
-        region=region,
-        location=region,
-        gold=1000,
-        day=1,
-        grid=initialize_grid(region)
+        region=region, location=region, gold=1000, day=1, grid=initialize_grid(region)
     )
-    
+
     return {
         "grid": [cell.model_dump() for cell in game_state.grid],
         "gold": game_state.gold,
         "day": game_state.day,
         "region": game_state.region,
-        "events": [f"Farm initialized in {region} region"]
+        "events": [f"Farm initialized in {region} region"],
     }
 
 
@@ -351,7 +354,7 @@ def init_by_location(request: LocationInitRequest):
         day=1,
         grid=grid
     )
-    
+
     return {
         "grid": [cell.model_dump() for cell in game_state.grid],
         "gold": game_state.gold,
@@ -390,16 +393,17 @@ def update_game_state(new_state: GameState):
 
 # ============== GRID CELL ENDPOINTS ==============
 
+
 @app.get("/state/grid/{row}/{col}")
 def get_cell_state(row: int, col: int):
     """Get state of a specific grid cell"""
     global game_state
     if game_state is None:
         raise HTTPException(status_code=400, detail="Game not initialized")
-    
+
     if not (0 <= row < 4 and 0 <= col < 4):
         raise HTTPException(status_code=400, detail="Invalid cell coordinates")
-    
+
     index = row * GRID_WIDTH + col
     return game_state.grid[index].model_dump()
 
@@ -410,10 +414,10 @@ def update_cell_state(row: int, col: int, cellstate: CellState):
     global game_state
     if game_state is None:
         raise HTTPException(status_code=400, detail="Game not initialized")
-    
+
     if not (0 <= row < 4 and 0 <= col < 4):
         raise HTTPException(status_code=400, detail="Invalid cell coordinates")
-    
+
     index = row * GRID_WIDTH + col
     game_state.grid[index] = cellstate
     return game_state.grid[index].model_dump()
@@ -421,23 +425,26 @@ def update_cell_state(row: int, col: int, cellstate: CellState):
 
 # ============== ACTION ENDPOINTS ==============
 
+
 @app.post("/action")
 def perform_action(request: BatchActionRequest):
     """Perform an action on selected cells"""
     global game_state
     if game_state is None:
         raise HTTPException(status_code=400, detail="Game not initialized")
-    
+
     action = request.action
     indices = request.indices
-    
+
     if action not in ACTIONS:
         raise HTTPException(status_code=404, detail=f"Action '{action}' not found")
-    
+
     action_data = ACTIONS[action]
-    cost_per_cell = action_data["cost"].get(game_state.region, action_data["cost"]["Hilly"])
+    cost_per_cell = action_data["cost"].get(
+        game_state.region, action_data["cost"]["Hilly"]
+    )
     total_cost = cost_per_cell * len(indices)
-    
+
     # Check if harvest
     if action == "harvest":
         harvested = 0
@@ -452,31 +459,34 @@ def perform_action(request: BatchActionRequest):
                     harvested += 1
                     cell.crop = None
                     cell.stage = 0
-        
+
         game_state.gold += gold_earned
         return {
             "msg": f"Harvested {harvested} crops! Earned {gold_earned}g",
             "gold": game_state.gold,
-            "harvested": harvested
+            "harvested": harvested,
         }
-    
+
     # Check gold
     if game_state.gold < total_cost:
-        raise HTTPException(status_code=400, detail=f"Not enough gold. Need {total_cost}g, have {game_state.gold}g")
-    
+        raise HTTPException(
+            status_code=400,
+            detail=f"Not enough gold. Need {total_cost}g, have {game_state.gold}g",
+        )
+
     # Apply action to cells
     affected = 0
     for idx in indices:
         if 0 <= idx < 16:
             game_state.grid[idx].take_action(action)
             affected += 1
-    
+
     game_state.gold -= total_cost
-    
+
     return {
         "msg": f"{action_data['name']} applied to {affected} cells (-{total_cost}g)",
         "gold": game_state.gold,
-        "affected": affected
+        "affected": affected,
     }
 
 
@@ -486,23 +496,29 @@ def plant_crop(request: PlantRequest):
     global game_state
     if game_state is None:
         raise HTTPException(status_code=400, detail="Game not initialized")
-    
+
     crop_name = request.crop.capitalize()
     indices = request.indices
-    
+
     if crop_name not in CROPS:
         raise HTTPException(status_code=404, detail=f"Crop '{crop_name}' not found")
-    
+
     crop_data = CROPS[crop_name]
-    cost_per_plant = crop_data["cost"].get(game_state.region, crop_data["cost"]["Hilly"])
-    
+    cost_per_plant = crop_data["cost"].get(
+        game_state.region, crop_data["cost"]["Hilly"]
+    )
+
     # Count plantable cells
-    plantable = sum(1 for idx in indices if 0 <= idx < 16 and game_state.grid[idx].crop is None)
+    plantable = sum(
+        1 for idx in indices if 0 <= idx < 16 and game_state.grid[idx].crop is None
+    )
     total_cost = cost_per_plant * plantable
-    
+
     if game_state.gold < total_cost:
-        raise HTTPException(status_code=400, detail=f"Not enough gold. Need {total_cost}g")
-    
+        raise HTTPException(
+            status_code=400, detail=f"Not enough gold. Need {total_cost}g"
+        )
+
     planted = 0
     for idx in indices:
         if 0 <= idx < 16:
@@ -512,17 +528,18 @@ def plant_crop(request: PlantRequest):
                 cell.stage = 0
                 cell.max_stage = crop_data["days"] * 10  # Growth stages
                 planted += 1
-    
+
     game_state.gold -= planted * cost_per_plant
-    
+
     return {
         "msg": f"Planted {planted} {crop_name} (-{planted * cost_per_plant}g)",
         "gold": game_state.gold,
-        "planted": planted
+        "planted": planted,
     }
 
 
 # ============== RECOMMENDATION ENDPOINTS ==============
+
 
 @app.post("/recommend")
 def get_recommendations(request: RecommendRequest):
@@ -535,7 +552,7 @@ def get_recommendations(request: RecommendRequest):
         humidity=request.humidity,
         ph=request.ph,
         rainfall=request.rainfall,
-        top_n=3
+        top_n=3,
     )
     return {"recommendations": recommendations}
 
@@ -546,13 +563,13 @@ def get_cell_recommendations(row: int, col: int):
     global game_state
     if game_state is None:
         raise HTTPException(status_code=400, detail="Game not initialized")
-    
+
     if not (0 <= row < 4 and 0 <= col < 4):
         raise HTTPException(status_code=400, detail="Invalid cell coordinates")
-    
+
     index = row * GRID_WIDTH + col
     cell = game_state.grid[index]
-    
+
     recommendations = model.get_recommendations(
         n=cell.n,
         p=cell.p,
@@ -561,7 +578,7 @@ def get_cell_recommendations(row: int, col: int):
         humidity=cell.humidity,
         ph=cell.ph,
         rainfall=cell.rainfall,
-        top_n=3
+        top_n=3,
     )
     return {"cell": index, "recommendations": recommendations}
 
@@ -573,12 +590,10 @@ def get_average_recommendations():
     if game_state is None:
         # Return default recommendations
         recommendations = model.get_recommendations(
-            n=40, p=40, k=40,
-            temperature=25, humidity=65, ph=6.5, rainfall=100,
-            top_n=3
+            n=40, p=40, k=40, temperature=25, humidity=65, ph=6.5, rainfall=100, top_n=3
         )
         return {"recommendations": recommendations}
-    
+
     # Calculate averages
     n_cells = len(game_state.grid)
     avg_n = sum(c.n for c in game_state.grid) / n_cells
@@ -588,17 +603,22 @@ def get_average_recommendations():
     avg_humidity = sum(c.humidity for c in game_state.grid) / n_cells
     avg_ph = sum(c.ph for c in game_state.grid) / n_cells
     avg_rainfall = sum(c.rainfall for c in game_state.grid) / n_cells
-    
+
     recommendations = model.get_recommendations(
-        n=avg_n, p=avg_p, k=avg_k,
-        temperature=avg_temp, humidity=avg_humidity, 
-        ph=avg_ph, rainfall=avg_rainfall,
-        top_n=3
+        n=avg_n,
+        p=avg_p,
+        k=avg_k,
+        temperature=avg_temp,
+        humidity=avg_humidity,
+        ph=avg_ph,
+        rainfall=avg_rainfall,
+        top_n=3,
     )
     return {"recommendations": recommendations}
 
 
 # ============== GEMINI/AI ENDPOINTS ==============
+
 
 @app.post("/chat")
 def chat_with_lab(request: ChatRequest):
@@ -607,43 +627,45 @@ def chat_with_lab(request: ChatRequest):
     Uses Gemini to analyze game state, recent actions, and model predictions.
     """
     global game_state
-    
+
     # Use frontend-provided game state if available, else use server state
     current_state = None
     if request.game_state:
         # Build GameState from frontend data
         try:
-            grid_data = request.game_state.get('grid', [])
+            grid_data = request.game_state.get("grid", [])
             cells = []
             for g in grid_data:
-                cells.append(CellState(
-                    n=g.get('n', 40),
-                    p=g.get('p', 40),
-                    k=g.get('k', 40),
-                    rainfall=g.get('rainfall', 100),
-                    ph=g.get('ph', 6.5),
-                    humidity=g.get('humidity', 60),
-                    temperature=g.get('temperature', 25),
-                    moisture=g.get('moisture', 50),
-                    crop=g.get('crop'),
-                    stage=int(g.get('stage', 0)),
-                    max_stage=int(g.get('max_stage', 100)),
-                    weed=g.get('weed', 0),
-                    health=g.get('health', 100)
-                ))
+                cells.append(
+                    CellState(
+                        n=g.get("n", 40),
+                        p=g.get("p", 40),
+                        k=g.get("k", 40),
+                        rainfall=g.get("rainfall", 100),
+                        ph=g.get("ph", 6.5),
+                        humidity=g.get("humidity", 60),
+                        temperature=g.get("temperature", 25),
+                        moisture=g.get("moisture", 50),
+                        crop=g.get("crop"),
+                        stage=int(g.get("stage", 0)),
+                        max_stage=int(g.get("max_stage", 100)),
+                        weed=g.get("weed", 0),
+                        health=g.get("health", 100),
+                    )
+                )
             current_state = GameState(
-                location=request.game_state.get('location', 'Unknown'),
-                region=request.game_state.get('region', 'Hilly'),
-                gold=request.game_state.get('gold', 1000),
-                day=request.game_state.get('day', 1),
-                grid=cells if cells else [CellState() for _ in range(16)]
+                location=request.game_state.get("location", "Unknown"),
+                region=request.game_state.get("region", "Hilly"),
+                gold=request.game_state.get("gold", 1000),
+                day=request.game_state.get("day", 1),
+                grid=cells if cells else [CellState() for _ in range(16)],
             )
         except Exception as e:
             print(f"Error parsing frontend game state: {e}")
             current_state = game_state
     else:
         current_state = game_state
-    
+
     if current_state is None:
         # Create a default state for chat if nothing available
         current_state = GameState(
@@ -651,14 +673,24 @@ def chat_with_lab(request: ChatRequest):
             region="Hilly",
             gold=1000,
             day=1,
-            grid=[CellState() for _ in range(16)]
+            grid=[CellState() for _ in range(16)],
         )
-    
+
     # Get predictions for all cells
     predictions = {}
     for i, cell in enumerate(current_state.grid):
         # params order: ['N', 'P', 'K', 'temperature', 'humidity', 'ph', 'rainfall']
-        params = np.array([cell.n, cell.p, cell.k, cell.temperature, cell.humidity, cell.ph, cell.rainfall])
+        params = np.array(
+            [
+                cell.n,
+                cell.p,
+                cell.k,
+                cell.temperature,
+                cell.humidity,
+                cell.ph,
+                cell.rainfall,
+            ]
+        )
         preds = model.predict(params)
         # Get top 3 suitable crops (lowest distance)
         sorted_preds = sorted(preds.items(), key=lambda x: x[1])[:3]
@@ -668,16 +700,17 @@ def chat_with_lab(request: ChatRequest):
         message=request.message,
         game_state=current_state,
         recent_actions=request.recent_actions,
-        predictions=predictions
+        predictions=predictions,
     )
-    
+
     return {"response": response}
+
 
 @app.post("/gemini")
 def ask_gemini(context: dict):
     """Get AI advice (mock implementation)"""
     ctx = context.get("context", "")
-    
+
     # Simple response based on keywords
     if "water" in ctx.lower():
         advice = "Watering is essential for crop health. Monitor soil moisture levels."
@@ -687,7 +720,7 @@ def ask_gemini(context: dict):
         advice = "Harvest crops when they reach full maturity for maximum yield."
     else:
         advice = "Focus on maintaining optimal soil conditions for your crops."
-    
+
     return {"advice": advice}
 
 
@@ -695,19 +728,58 @@ def ask_gemini(context: dict):
 def summarize_interactions(interactions: dict):
     """Generate a summary of AI interactions (mock implementation)"""
     interaction_list = interactions.get("interactions", [])
-    
+
     if not interaction_list:
         return {"summary": "No interactions to summarize."}
-    
+
     summary_parts = []
     for i, item in enumerate(interaction_list, 1):
         human = item.get("human", "")
         ai = item.get("ai", "")
         summary_parts.append(f"{i}. Query: {human[:50]}... → {ai[:50]}...")
-    
+
     return {"summary": "Session Summary:\n" + "\n".join(summary_parts)}
+
+
+from io import BytesIO
+
+from dataclasses import dataclass
+
+
+@dataclass
+class Message:
+    role: str
+    content: str
+
+
+messages = []
+
+
+@app.post("/dpredict")
+async def predict_endpoint(message: str, image: UploadFile = File(...)):
+    contents = await image.read()  # bytes
+    
+    # Check if image is valid/provided (not placeholder)
+    # The frontend sends a placeholder Blob([''], type='image/png') if no image
+    # calculated size of 'placeholder' might be tiny. 
+    # But let's just pass contents. If it fails to open as image, the service handles it.
+    
+    chatres = analyze_disease_chat(messages, message, contents)
+    retdict = {"chatres": chatres}
+    
+    # Update local history
+    messages.append(Message(role="user", content=message))
+    messages.append(Message(role="assistant", content=chatres))
+    
+    return retdict
+
+
+@app.get("/pathologer")
+async def get_messages():
+    return {"messages": messages}
 
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)

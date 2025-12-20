@@ -44,6 +44,391 @@
         "documentation": {}
     },
     {
+        "label": "streamlit",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "streamlit",
+        "description": "streamlit",
+        "detail": "streamlit",
+        "documentation": {}
+    },
+    {
+        "label": "tensorflow",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "tensorflow",
+        "description": "tensorflow",
+        "detail": "tensorflow",
+        "documentation": {}
+    },
+    {
+        "label": "numpy",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "numpy",
+        "description": "numpy",
+        "detail": "numpy",
+        "documentation": {}
+    },
+    {
+        "label": "time",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "time",
+        "description": "time",
+        "detail": "time",
+        "documentation": {}
+    },
+    {
+        "label": "dataclasses",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "dataclasses",
+        "description": "dataclasses",
+        "detail": "dataclasses",
+        "documentation": {}
+    },
+    {
+        "label": "dataclass",
+        "importPath": "dataclasses",
+        "description": "dataclasses",
+        "isExtraImport": true,
+        "detail": "dataclasses",
+        "documentation": {}
+    },
+    {
+        "label": "dataclass",
+        "importPath": "dataclasses",
+        "description": "dataclasses",
+        "isExtraImport": true,
+        "detail": "dataclasses",
+        "documentation": {}
+    },
+    {
+        "label": "SPEED",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "ACTIONS",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "GRID_WIDTH",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "CROPS",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "ACTIONS",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "REGIONS",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "CROPS_USED",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "MODEL_ALPHA",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "MODEL_GOLDUNIT",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "List",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Optional",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "List",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Optional",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "BaseModel",
+        "importPath": "pydantic",
+        "description": "pydantic",
+        "isExtraImport": true,
+        "detail": "pydantic",
+        "documentation": {}
+    },
+    {
+        "label": "BaseModel",
+        "importPath": "pydantic",
+        "description": "pydantic",
+        "isExtraImport": true,
+        "detail": "pydantic",
+        "documentation": {}
+    },
+    {
+        "label": "google.generativeai",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "google.generativeai",
+        "description": "google.generativeai",
+        "detail": "google.generativeai",
+        "documentation": {}
+    },
+    {
+        "label": "load_dotenv",
+        "importPath": "dotenv",
+        "description": "dotenv",
+        "isExtraImport": true,
+        "detail": "dotenv",
+        "documentation": {}
+    },
+    {
+        "label": "GameState",
+        "importPath": "game_engine.engine",
+        "description": "game_engine.engine",
+        "isExtraImport": true,
+        "detail": "game_engine.engine",
+        "documentation": {}
+    },
+    {
+        "label": "CellState",
+        "importPath": "game_engine.engine",
+        "description": "game_engine.engine",
+        "isExtraImport": true,
+        "detail": "game_engine.engine",
+        "documentation": {}
+    },
+    {
+        "label": "GameState",
+        "importPath": "game_engine.engine",
+        "description": "game_engine.engine",
+        "isExtraImport": true,
+        "detail": "game_engine.engine",
+        "documentation": {}
+    },
+    {
+        "label": "BatchActionRequest",
+        "importPath": "game_engine.engine",
+        "description": "game_engine.engine",
+        "isExtraImport": true,
+        "detail": "game_engine.engine",
+        "documentation": {}
+    },
+    {
+        "label": "PlantRequest",
+        "importPath": "game_engine.engine",
+        "description": "game_engine.engine",
+        "isExtraImport": true,
+        "detail": "game_engine.engine",
+        "documentation": {}
+    },
+    {
+        "label": "RecommendRequest",
+        "importPath": "game_engine.engine",
+        "description": "game_engine.engine",
+        "isExtraImport": true,
+        "detail": "game_engine.engine",
+        "documentation": {}
+    },
+    {
+        "label": "InitRequest",
+        "importPath": "game_engine.engine",
+        "description": "game_engine.engine",
+        "isExtraImport": true,
+        "detail": "game_engine.engine",
+        "documentation": {}
+    },
+    {
+        "label": "io",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "io",
+        "description": "io",
+        "detail": "io",
+        "documentation": {}
+    },
+    {
+        "label": "BytesIO",
+        "importPath": "io",
+        "description": "io",
+        "isExtraImport": true,
+        "detail": "io",
+        "documentation": {}
+    },
+    {
+        "label": "BytesIO",
+        "importPath": "io",
+        "description": "io",
+        "isExtraImport": true,
+        "detail": "io",
+        "documentation": {}
+    },
+    {
+        "label": "FastAPI",
+        "importPath": "fastapi",
+        "description": "fastapi",
+        "isExtraImport": true,
+        "detail": "fastapi",
+        "documentation": {}
+    },
+    {
+        "label": "File",
+        "importPath": "fastapi",
+        "description": "fastapi",
+        "isExtraImport": true,
+        "detail": "fastapi",
+        "documentation": {}
+    },
+    {
+        "label": "HTTPException",
+        "importPath": "fastapi",
+        "description": "fastapi",
+        "isExtraImport": true,
+        "detail": "fastapi",
+        "documentation": {}
+    },
+    {
+        "label": "UploadFile",
+        "importPath": "fastapi",
+        "description": "fastapi",
+        "isExtraImport": true,
+        "detail": "fastapi",
+        "documentation": {}
+    },
+    {
+        "label": "CORSMiddleware",
+        "importPath": "fastapi.middleware.cors",
+        "description": "fastapi.middleware.cors",
+        "isExtraImport": true,
+        "detail": "fastapi.middleware.cors",
+        "documentation": {}
+    },
+    {
+        "label": "predict_disease",
+        "importPath": "chat_service",
+        "description": "chat_service",
+        "isExtraImport": true,
+        "detail": "chat_service",
+        "documentation": {}
+    },
+    {
+        "label": "summarize_disease",
+        "importPath": "chat_service",
+        "description": "chat_service",
+        "isExtraImport": true,
+        "detail": "chat_service",
+        "documentation": {}
+    },
+    {
+        "label": "get_chat_response",
+        "importPath": "chat_service",
+        "description": "chat_service",
+        "isExtraImport": true,
+        "detail": "chat_service",
+        "documentation": {}
+    },
+    {
+        "label": "Clock",
+        "importPath": "game_engine.clock",
+        "description": "game_engine.clock",
+        "isExtraImport": true,
+        "detail": "game_engine.clock",
+        "documentation": {}
+    },
+    {
+        "label": "Clock",
+        "importPath": "game_engine.clock",
+        "description": "game_engine.clock",
+        "isExtraImport": true,
+        "detail": "game_engine.clock",
+        "documentation": {}
+    },
+    {
+        "label": "Model",
+        "importPath": "model",
+        "description": "model",
+        "isExtraImport": true,
+        "detail": "model",
+        "documentation": {}
+    },
+    {
+        "label": "pandas",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "pandas",
+        "description": "pandas",
+        "detail": "pandas",
+        "documentation": {}
+    },
+    {
+        "label": "json",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "json",
+        "description": "json",
+        "detail": "json",
+        "documentation": {}
+    },
+    {
         "label": "bin_dir",
         "kind": 5,
         "importPath": "backend..venv.bin.activate_this",
@@ -125,6 +510,150 @@
         "documentation": {}
     },
     {
+        "label": "model_prediction",
+        "kind": 2,
+        "importPath": "backend.disease-prediction.main",
+        "description": "backend.disease-prediction.main",
+        "peekOfCode": "def model_prediction(test_image):\n    model  = tf.keras.models.load_model('trained_model.h5')\n    image = tf.keras.preprocessing.image.load_img(test_image,target_size=(128, 128))\n    input_arr = tf.keras.preprocessing.image.img_to_array(image)\n    input_arr = np.array([input_arr]) #Convert single image to a batch\n    prediction = model.predict(input_arr)\n    result_index = np.argmax(prediction)\n    return result_index\n#Sidebar\nst.sidebar.title(\"Dashboard\")",
+        "detail": "backend.disease-prediction.main",
+        "documentation": {}
+    },
+    {
+        "label": "app_mode",
+        "kind": 5,
+        "importPath": "backend.disease-prediction.main",
+        "description": "backend.disease-prediction.main",
+        "peekOfCode": "app_mode = st.sidebar.selectbox(\"Select Page\",[\"Home\",\"About\",\"Disease Recognition\"])\n#Home Page\nif(app_mode==\"Home\"):\n    st.header(\"PLANT DISEASE RECOGNITION SYSTEM\")\n    image_path = \"home_page.jpeg\"\n    st.image(image_path,use_column_width=True)\n    st.markdown(\"\"\"\n    Welcome to the Plant Disease Recognition System! 🌿🔍\n    Our mission is to help in identifying plant diseases efficiently. Upload an image of a plant, and our system will analyze it to detect any signs of diseases. Together, let's protect our crops and ensure a healthier harvest!\n    ### How It Works",
+        "detail": "backend.disease-prediction.main",
+        "documentation": {}
+    },
+    {
+        "label": "Clock",
+        "kind": 6,
+        "importPath": "backend.game_engine.clock",
+        "description": "backend.game_engine.clock",
+        "peekOfCode": "class Clock:\n    start_real: float = time.monotonic()\n    start_game: float = 0.0\n    speed: float = SPEED  # 1.0 = real time, 2.0 = 2x faster, 0 = paused\n    def now(self) -> float:\n        return self.start_game + (time.monotonic() - self.start_real) * self.speed",
+        "detail": "backend.game_engine.clock",
+        "documentation": {}
+    },
+    {
+        "label": "CellState",
+        "kind": 6,
+        "importPath": "backend.game_engine.engine",
+        "description": "backend.game_engine.engine",
+        "peekOfCode": "class CellState(BaseModel):\n    \"\"\"Represents soil and crop state of a single grid cell\"\"\"\n    n: float = 0\n    p: float = 0\n    k: float = 0\n    rainfall: float = 0\n    ph: float = 6.5\n    humidity: float = 60\n    temperature: float = 25\n    moisture: float = 50",
+        "detail": "backend.game_engine.engine",
+        "documentation": {}
+    },
+    {
+        "label": "GameState",
+        "kind": 6,
+        "importPath": "backend.game_engine.engine",
+        "description": "backend.game_engine.engine",
+        "peekOfCode": "class GameState(BaseModel):\n    \"\"\"Represents the entire game state\"\"\"\n    location: str = \"Kathmandu\"\n    region: str = \"Hilly\"\n    gold: int = 1000\n    day: int = 1\n    grid: List[CellState] = []\n    def __init__(self, **data):\n        super().__init__(**data)\n        if not self.grid:",
+        "detail": "backend.game_engine.engine",
+        "documentation": {}
+    },
+    {
+        "label": "BatchActionRequest",
+        "kind": 6,
+        "importPath": "backend.game_engine.engine",
+        "description": "backend.game_engine.engine",
+        "peekOfCode": "class BatchActionRequest(BaseModel):\n    \"\"\"Request model for batch actions on multiple cells\"\"\"\n    action: str\n    indices: List[int]\nclass PlantRequest(BaseModel):\n    \"\"\"Request model for planting crops\"\"\"\n    crop: str\n    indices: List[int]\nclass RecommendRequest(BaseModel):\n    \"\"\"Request model for crop recommendations based on soil parameters\"\"\"",
+        "detail": "backend.game_engine.engine",
+        "documentation": {}
+    },
+    {
+        "label": "PlantRequest",
+        "kind": 6,
+        "importPath": "backend.game_engine.engine",
+        "description": "backend.game_engine.engine",
+        "peekOfCode": "class PlantRequest(BaseModel):\n    \"\"\"Request model for planting crops\"\"\"\n    crop: str\n    indices: List[int]\nclass RecommendRequest(BaseModel):\n    \"\"\"Request model for crop recommendations based on soil parameters\"\"\"\n    n: float = 40\n    p: float = 40\n    k: float = 40\n    temperature: float = 25",
+        "detail": "backend.game_engine.engine",
+        "documentation": {}
+    },
+    {
+        "label": "RecommendRequest",
+        "kind": 6,
+        "importPath": "backend.game_engine.engine",
+        "description": "backend.game_engine.engine",
+        "peekOfCode": "class RecommendRequest(BaseModel):\n    \"\"\"Request model for crop recommendations based on soil parameters\"\"\"\n    n: float = 40\n    p: float = 40\n    k: float = 40\n    temperature: float = 25\n    humidity: float = 65\n    ph: float = 6.5\n    rainfall: float = 100\nclass InitRequest(BaseModel):",
+        "detail": "backend.game_engine.engine",
+        "documentation": {}
+    },
+    {
+        "label": "InitRequest",
+        "kind": 6,
+        "importPath": "backend.game_engine.engine",
+        "description": "backend.game_engine.engine",
+        "peekOfCode": "class InitRequest(BaseModel):\n    \"\"\"Request model for game initialization\"\"\"\n    region: str = \"Hilly\"\n    lat: Optional[float] = None\n    lng: Optional[float] = None",
+        "detail": "backend.game_engine.engine",
+        "documentation": {}
+    },
+    {
+        "label": "get_chat_response",
+        "kind": 2,
+        "importPath": "backend.chat_service",
+        "description": "backend.chat_service",
+        "peekOfCode": "def get_chat_response(\n    message: str, game_state: GameState, recent_actions: list, predictions: dict\n) -> str:\n    if not API_KEY:\n        print(\"Error: GEMINI_API_KEY not found.\")\n        return \"Error: GEMINI_API_KEY not found in environment variables.\"\n    try:\n        print(f\"Generating response with model: {MODEL_NAME}...\")\n        model = genai.GenerativeModel(MODEL_NAME)\n        # Construct the prompt",
+        "detail": "backend.chat_service",
+        "documentation": {}
+    },
+    {
+        "label": "predict_disease",
+        "kind": 2,
+        "importPath": "backend.chat_service",
+        "description": "backend.chat_service",
+        "peekOfCode": "def predict_disease(file: BytesIO):\n    image = tf.keras.utils.load_img(\n        file, target_size=(128, 128)\n    )  # or tf.keras.preprocessing.image.load_img\n    input_arr = tf.keras.utils.img_to_array(image)\n    input_arr = np.expand_dims(input_arr, axis=0)  # (1, 128, 128, 3)\n    prediction = m.predict(input_arr)\n    result_index = int(np.argmax(prediction))\n    return class_name[result_index]\ndef summarize_disease(ctx, message: str, disease: str):",
+        "detail": "backend.chat_service",
+        "documentation": {}
+    },
+    {
+        "label": "summarize_disease",
+        "kind": 2,
+        "importPath": "backend.chat_service",
+        "description": "backend.chat_service",
+        "peekOfCode": "def summarize_disease(ctx, message: str, disease: str):\n    if not API_KEY:\n        print(\"Error: GEMINI_API_KEY not found.\")\n        return \"Error: GEMINI_API_KEY not found in environment variables.\"\n    try:\n        print(f\"Generating response with model: {MODEL_NAME}...\")\n        model = genai.GenerativeModel(MODEL_NAME)\n        # Construct the prompt\n        prompt = f\"\"\"\n        You are an expert agricultural pathologist that explains about a disease in a farming simulation game called EcoFarm.",
+        "detail": "backend.chat_service",
+        "documentation": {}
+    },
+    {
+        "label": "API_KEY",
+        "kind": 5,
+        "importPath": "backend.chat_service",
+        "description": "backend.chat_service",
+        "peekOfCode": "API_KEY = os.getenv(\"GEMINI_API_KEY\")\nif API_KEY:\n    genai.configure(api_key=API_KEY)\n# Use a fallback if the specific model isn't available, but try to respect user wish or standard\nMODEL_NAME = \"gemini-2.5-flash\"  # Switched to 1.5 Flash for better speed/stability\ndef get_chat_response(\n    message: str, game_state: GameState, recent_actions: list, predictions: dict\n) -> str:\n    if not API_KEY:\n        print(\"Error: GEMINI_API_KEY not found.\")",
+        "detail": "backend.chat_service",
+        "documentation": {}
+    },
+    {
+        "label": "MODEL_NAME",
+        "kind": 5,
+        "importPath": "backend.chat_service",
+        "description": "backend.chat_service",
+        "peekOfCode": "MODEL_NAME = \"gemini-2.5-flash\"  # Switched to 1.5 Flash for better speed/stability\ndef get_chat_response(\n    message: str, game_state: GameState, recent_actions: list, predictions: dict\n) -> str:\n    if not API_KEY:\n        print(\"Error: GEMINI_API_KEY not found.\")\n        return \"Error: GEMINI_API_KEY not found in environment variables.\"\n    try:\n        print(f\"Generating response with model: {MODEL_NAME}...\")\n        model = genai.GenerativeModel(MODEL_NAME)",
+        "detail": "backend.chat_service",
+        "documentation": {}
+    },
+    {
+        "label": "m",
+        "kind": 5,
+        "importPath": "backend.chat_service",
+        "description": "backend.chat_service",
+        "peekOfCode": "m = tf.keras.models.load_model(\"trained_model.h5\")\nclass_name = [\n    \"Apple___Apple_scab\",\n    \"Apple___Black_rot\",\n    \"Apple___Cedar_apple_rust\",\n    \"Apple___healthy\",\n    \"Blueberry___healthy\",\n    \"Cherry_(including_sour)___Powdery_mildew\",\n    \"Cherry_(including_sour)___healthy\",\n    \"Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot\",",
+        "detail": "backend.chat_service",
+        "documentation": {}
+    },
+    {
+        "label": "class_name",
+        "kind": 5,
+        "importPath": "backend.chat_service",
+        "description": "backend.chat_service",
+        "peekOfCode": "class_name = [\n    \"Apple___Apple_scab\",\n    \"Apple___Black_rot\",\n    \"Apple___Cedar_apple_rust\",\n    \"Apple___healthy\",\n    \"Blueberry___healthy\",\n    \"Cherry_(including_sour)___Powdery_mildew\",\n    \"Cherry_(including_sour)___healthy\",\n    \"Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot\",\n    \"Corn_(maize)___Common_rust_\",",
+        "detail": "backend.chat_service",
+        "documentation": {}
+    },
+    {
         "label": "CROPS_USED",
         "kind": 5,
         "importPath": "backend.constants",
@@ -134,12 +663,390 @@
         "documentation": {}
     },
     {
-        "label": "main",
+        "label": "GRID_WIDTH",
+        "kind": 5,
+        "importPath": "backend.constants",
+        "description": "backend.constants",
+        "peekOfCode": "GRID_WIDTH = 4\nMODEL_ALPHA = 100\nMODEL_GOLDUNIT = 10\nSPEED = 1400\nMONTHS = [\n    \"Baisakh\",\n    \"Jestha\",\n    \"Asar\",\n    \"Shrawan\",\n    \"Bhadra\",",
+        "detail": "backend.constants",
+        "documentation": {}
+    },
+    {
+        "label": "MODEL_ALPHA",
+        "kind": 5,
+        "importPath": "backend.constants",
+        "description": "backend.constants",
+        "peekOfCode": "MODEL_ALPHA = 100\nMODEL_GOLDUNIT = 10\nSPEED = 1400\nMONTHS = [\n    \"Baisakh\",\n    \"Jestha\",\n    \"Asar\",\n    \"Shrawan\",\n    \"Bhadra\",\n    \"Ashwin\",",
+        "detail": "backend.constants",
+        "documentation": {}
+    },
+    {
+        "label": "MODEL_GOLDUNIT",
+        "kind": 5,
+        "importPath": "backend.constants",
+        "description": "backend.constants",
+        "peekOfCode": "MODEL_GOLDUNIT = 10\nSPEED = 1400\nMONTHS = [\n    \"Baisakh\",\n    \"Jestha\",\n    \"Asar\",\n    \"Shrawan\",\n    \"Bhadra\",\n    \"Ashwin\",\n    \"Kartik\",",
+        "detail": "backend.constants",
+        "documentation": {}
+    },
+    {
+        "label": "SPEED",
+        "kind": 5,
+        "importPath": "backend.constants",
+        "description": "backend.constants",
+        "peekOfCode": "SPEED = 1400\nMONTHS = [\n    \"Baisakh\",\n    \"Jestha\",\n    \"Asar\",\n    \"Shrawan\",\n    \"Bhadra\",\n    \"Ashwin\",\n    \"Kartik\",\n    \"Mangsir\",",
+        "detail": "backend.constants",
+        "documentation": {}
+    },
+    {
+        "label": "MONTHS",
+        "kind": 5,
+        "importPath": "backend.constants",
+        "description": "backend.constants",
+        "peekOfCode": "MONTHS = [\n    \"Baisakh\",\n    \"Jestha\",\n    \"Asar\",\n    \"Shrawan\",\n    \"Bhadra\",\n    \"Ashwin\",\n    \"Kartik\",\n    \"Mangsir\",\n    \"Poush\",",
+        "detail": "backend.constants",
+        "documentation": {}
+    },
+    {
+        "label": "REGIONS",
+        "kind": 5,
+        "importPath": "backend.constants",
+        "description": "backend.constants",
+        "peekOfCode": "REGIONS = {\n    \"Terai\": {\n        \"temperature\": 30.0,\n        \"humidity\": 80.0,\n        \"rainfall\": 150.0,\n        \"moisture\": 60.0,\n        \"desc\": \"Hot, humid plains of southern Nepal; major rice, maize, jute, sugarcane, cotton belt.\",\n    },\n    \"Hilly\": {\n        \"temperature\": 20.0,",
+        "detail": "backend.constants",
+        "documentation": {}
+    },
+    {
+        "label": "CROPS",
+        "kind": 5,
+        "importPath": "backend.constants",
+        "description": "backend.constants",
+        "peekOfCode": "CROPS = {\n    \"Rice\": {\n        \"cost\": {\"Terai\": 150, \"Hilly\": 180, \"Himalayan\": 220},\n        \"days\": 12,\n        \"harvest_gold\": 220,\n        \"ideal\": {\n            \"moisture\": 80,\n            \"temperature\": 24,\n            \"n\": 80,\n            \"p\": 48,",
+        "detail": "backend.constants",
+        "documentation": {}
+    },
+    {
+        "label": "ACTIONS",
+        "kind": 5,
+        "importPath": "backend.constants",
+        "description": "backend.constants",
+        "peekOfCode": "ACTIONS = {\n    \"plough\": {\n        \"name\": \"Tractor Ploughing\",\n        \"cost\": {\"Terai\": 90, \"Hilly\": 110, \"Himalayan\": 130},\n        \"effect\": {\"moisture\": -5},\n        \"desc\": \"Primary tillage using tractor or power tiller, common in Terai and accessible hills.\",\n        \"duration\": 3,\n    },\n    \"irrigate\": {\n        \"name\": \"Canal / Tube-well Irrigation\",",
+        "detail": "backend.constants",
+        "documentation": {}
+    },
+    {
+        "label": "ChatRequest",
+        "kind": 6,
+        "importPath": "backend.main",
+        "description": "backend.main",
+        "peekOfCode": "class ChatRequest(BaseModel):\n    message: Optional[str] = None\n    recent_actions: List[str] = []\n    game_state: Optional[dict] = None  # Frontend can send game state directly\ndef get_region_from_elevation(elevation: float) -> str:\n    \"\"\"Determine region based on elevation in meters\"\"\"\n    if elevation < 300:\n        return \"Terai\"\n    elif elevation < 2000:\n        return \"Hilly\"",
+        "detail": "backend.main",
+        "documentation": {}
+    },
+    {
+        "label": "Message",
+        "kind": 6,
+        "importPath": "backend.main",
+        "description": "backend.main",
+        "peekOfCode": "class Message:\n    role: str\n    content: str\nmessages = []\n@app.post(\"/dpredict\")\nasync def predict_endpoint(message: str, image: UploadFile = File(...)):\n    contents = await image.read()  # bytes\n    file_obj = BytesIO(contents)  # BinaryIO-like object\n    disease = predict_disease(file_obj)\n    chatres = summarize_disease(messages, message, disease)",
+        "detail": "backend.main",
+        "documentation": {}
+    },
+    {
+        "label": "get_region_from_elevation",
         "kind": 2,
         "importPath": "backend.main",
         "description": "backend.main",
-        "peekOfCode": "def main():\n    print(\"Hello from ecofarm!\")\nif __name__ == \"__main__\":\n    main()",
+        "peekOfCode": "def get_region_from_elevation(elevation: float) -> str:\n    \"\"\"Determine region based on elevation in meters\"\"\"\n    if elevation < 300:\n        return \"Terai\"\n    elif elevation < 2000:\n        return \"Hilly\"\n    else:\n        return \"Himalayan\"\ndef initialize_grid(region: str) -> List[CellState]:\n    \"\"\"Initialize a 4x4 grid with region-appropriate defaults\"\"\"",
         "detail": "backend.main",
+        "documentation": {}
+    },
+    {
+        "label": "initialize_grid",
+        "kind": 2,
+        "importPath": "backend.main",
+        "description": "backend.main",
+        "peekOfCode": "def initialize_grid(region: str) -> List[CellState]:\n    \"\"\"Initialize a 4x4 grid with region-appropriate defaults\"\"\"\n    region_data = REGIONS.get(region, REGIONS[\"Hilly\"])\n    grid = []\n    for _ in range(16):\n        cell = CellState(\n            temperature=region_data[\"temperature\"],\n            humidity=region_data[\"humidity\"],\n            rainfall=region_data[\"rainfall\"],\n            moisture=region_data[\"moisture\"],",
+        "detail": "backend.main",
+        "documentation": {}
+    },
+    {
+        "label": "get_meta",
+        "kind": 2,
+        "importPath": "backend.main",
+        "description": "backend.main",
+        "peekOfCode": "def get_meta():\n    \"\"\"Get game metadata: crops, actions, and regions\"\"\"\n    return {\"crops\": CROPS, \"actions\": ACTIONS, \"regions\": REGIONS}\n@app.get(\"/regions\")\ndef get_regions():\n    \"\"\"Get available regions with their defaults\"\"\"\n    return REGIONS\n@app.get(\"/crops\")\ndef get_crops():\n    \"\"\"Get all available crops with their costs and ideal conditions\"\"\"",
+        "detail": "backend.main",
+        "documentation": {}
+    },
+    {
+        "label": "get_regions",
+        "kind": 2,
+        "importPath": "backend.main",
+        "description": "backend.main",
+        "peekOfCode": "def get_regions():\n    \"\"\"Get available regions with their defaults\"\"\"\n    return REGIONS\n@app.get(\"/crops\")\ndef get_crops():\n    \"\"\"Get all available crops with their costs and ideal conditions\"\"\"\n    return CROPS\n@app.get(\"/actions\")\ndef get_actions():\n    \"\"\"Get all available actions with costs and effects\"\"\"",
+        "detail": "backend.main",
+        "documentation": {}
+    },
+    {
+        "label": "get_crops",
+        "kind": 2,
+        "importPath": "backend.main",
+        "description": "backend.main",
+        "peekOfCode": "def get_crops():\n    \"\"\"Get all available crops with their costs and ideal conditions\"\"\"\n    return CROPS\n@app.get(\"/actions\")\ndef get_actions():\n    \"\"\"Get all available actions with costs and effects\"\"\"\n    return ACTIONS\n# ============== TIME ENDPOINTS ==============\n@app.get(\"/time\")\ndef get_time():",
+        "detail": "backend.main",
+        "documentation": {}
+    },
+    {
+        "label": "get_actions",
+        "kind": 2,
+        "importPath": "backend.main",
+        "description": "backend.main",
+        "peekOfCode": "def get_actions():\n    \"\"\"Get all available actions with costs and effects\"\"\"\n    return ACTIONS\n# ============== TIME ENDPOINTS ==============\n@app.get(\"/time\")\ndef get_time():\n    \"\"\"Get current game time\"\"\"\n    return {\"time\": clock.now()}\n@app.get(\"/tick\")\ndef tick():",
+        "detail": "backend.main",
+        "documentation": {}
+    },
+    {
+        "label": "get_time",
+        "kind": 2,
+        "importPath": "backend.main",
+        "description": "backend.main",
+        "peekOfCode": "def get_time():\n    \"\"\"Get current game time\"\"\"\n    return {\"time\": clock.now()}\n@app.get(\"/tick\")\ndef tick():\n    \"\"\"Advance game by one tick and return updated state\"\"\"\n    global game_state\n    if game_state is None:\n        raise HTTPException(status_code=400, detail=\"Game not initialized\")\n    # Advance day counter based on ticks",
+        "detail": "backend.main",
+        "documentation": {}
+    },
+    {
+        "label": "tick",
+        "kind": 2,
+        "importPath": "backend.main",
+        "description": "backend.main",
+        "peekOfCode": "def tick():\n    \"\"\"Advance game by one tick and return updated state\"\"\"\n    global game_state\n    if game_state is None:\n        raise HTTPException(status_code=400, detail=\"Game not initialized\")\n    # Advance day counter based on ticks\n    game_state.day += 1\n    # Update each cell\n    for cell in game_state.grid:\n        # Natural moisture decay",
+        "detail": "backend.main",
+        "documentation": {}
+    },
+    {
+        "label": "init_game",
+        "kind": 2,
+        "importPath": "backend.main",
+        "description": "backend.main",
+        "peekOfCode": "def init_game(request: InitRequest):\n    \"\"\"Initialize a new game with specified region\"\"\"\n    global game_state\n    region = request.region\n    if region not in REGIONS:\n        region = \"Hilly\"\n    game_state = GameState(\n        region=region, location=region, gold=1000, day=1, grid=initialize_grid(region)\n    )\n    return {",
+        "detail": "backend.main",
+        "documentation": {}
+    },
+    {
+        "label": "init_by_location",
+        "kind": 2,
+        "importPath": "backend.main",
+        "description": "backend.main",
+        "peekOfCode": "def init_by_location(lat: float, lng: float):\n    \"\"\"Initialize game based on geographic coordinates\"\"\"\n    global game_state\n    # Approximate elevation from latitude (simplified for Nepal)\n    # Southern Nepal (Terai) ~100m, Central (Hilly) ~1000m, Northern (Himalayan) ~3000m\n    # Latitude roughly: Terai 26-27, Hilly 27-28, Himalayan 28-30\n    if lat < 27.5:\n        elevation = 150\n        region = \"Terai\"\n    elif lat < 28.5:",
+        "detail": "backend.main",
+        "documentation": {}
+    },
+    {
+        "label": "get_game_state",
+        "kind": 2,
+        "importPath": "backend.main",
+        "description": "backend.main",
+        "peekOfCode": "def get_game_state():\n    \"\"\"Get current game state\"\"\"\n    global game_state\n    if game_state is None:\n        # Auto-initialize if not initialized\n        game_state = GameState(grid=initialize_grid(\"Hilly\"))\n    return game_state.model_dump()\n@app.post(\"/state\")\ndef set_game_state(new_state: GameState):\n    \"\"\"Set game state\"\"\"",
+        "detail": "backend.main",
+        "documentation": {}
+    },
+    {
+        "label": "set_game_state",
+        "kind": 2,
+        "importPath": "backend.main",
+        "description": "backend.main",
+        "peekOfCode": "def set_game_state(new_state: GameState):\n    \"\"\"Set game state\"\"\"\n    global game_state\n    game_state = new_state\n    return {\"status\": \"ok\"}\n@app.put(\"/state\")\ndef update_game_state(new_state: GameState):\n    \"\"\"Update game state\"\"\"\n    global game_state\n    game_state = new_state",
+        "detail": "backend.main",
+        "documentation": {}
+    },
+    {
+        "label": "update_game_state",
+        "kind": 2,
+        "importPath": "backend.main",
+        "description": "backend.main",
+        "peekOfCode": "def update_game_state(new_state: GameState):\n    \"\"\"Update game state\"\"\"\n    global game_state\n    game_state = new_state\n    return {\"status\": \"ok\"}\n# ============== GRID CELL ENDPOINTS ==============\n@app.get(\"/state/grid/{row}/{col}\")\ndef get_cell_state(row: int, col: int):\n    \"\"\"Get state of a specific grid cell\"\"\"\n    global game_state",
+        "detail": "backend.main",
+        "documentation": {}
+    },
+    {
+        "label": "get_cell_state",
+        "kind": 2,
+        "importPath": "backend.main",
+        "description": "backend.main",
+        "peekOfCode": "def get_cell_state(row: int, col: int):\n    \"\"\"Get state of a specific grid cell\"\"\"\n    global game_state\n    if game_state is None:\n        raise HTTPException(status_code=400, detail=\"Game not initialized\")\n    if not (0 <= row < 4 and 0 <= col < 4):\n        raise HTTPException(status_code=400, detail=\"Invalid cell coordinates\")\n    index = row * GRID_WIDTH + col\n    return game_state.grid[index].model_dump()\n@app.put(\"/state/grid/{row}/{col}\")",
+        "detail": "backend.main",
+        "documentation": {}
+    },
+    {
+        "label": "update_cell_state",
+        "kind": 2,
+        "importPath": "backend.main",
+        "description": "backend.main",
+        "peekOfCode": "def update_cell_state(row: int, col: int, cellstate: CellState):\n    \"\"\"Update a specific grid cell\"\"\"\n    global game_state\n    if game_state is None:\n        raise HTTPException(status_code=400, detail=\"Game not initialized\")\n    if not (0 <= row < 4 and 0 <= col < 4):\n        raise HTTPException(status_code=400, detail=\"Invalid cell coordinates\")\n    index = row * GRID_WIDTH + col\n    game_state.grid[index] = cellstate\n    return game_state.grid[index].model_dump()",
+        "detail": "backend.main",
+        "documentation": {}
+    },
+    {
+        "label": "perform_action",
+        "kind": 2,
+        "importPath": "backend.main",
+        "description": "backend.main",
+        "peekOfCode": "def perform_action(request: BatchActionRequest):\n    \"\"\"Perform an action on selected cells\"\"\"\n    global game_state\n    if game_state is None:\n        raise HTTPException(status_code=400, detail=\"Game not initialized\")\n    action = request.action\n    indices = request.indices\n    if action not in ACTIONS:\n        raise HTTPException(status_code=404, detail=f\"Action '{action}' not found\")\n    action_data = ACTIONS[action]",
+        "detail": "backend.main",
+        "documentation": {}
+    },
+    {
+        "label": "plant_crop",
+        "kind": 2,
+        "importPath": "backend.main",
+        "description": "backend.main",
+        "peekOfCode": "def plant_crop(request: PlantRequest):\n    \"\"\"Plant a crop on selected cells\"\"\"\n    global game_state\n    if game_state is None:\n        raise HTTPException(status_code=400, detail=\"Game not initialized\")\n    crop_name = request.crop.capitalize()\n    indices = request.indices\n    if crop_name not in CROPS:\n        raise HTTPException(status_code=404, detail=f\"Crop '{crop_name}' not found\")\n    crop_data = CROPS[crop_name]",
+        "detail": "backend.main",
+        "documentation": {}
+    },
+    {
+        "label": "get_recommendations",
+        "kind": 2,
+        "importPath": "backend.main",
+        "description": "backend.main",
+        "peekOfCode": "def get_recommendations(request: RecommendRequest):\n    \"\"\"Get top 3 crop recommendations based on soil parameters\"\"\"\n    recommendations = model.get_recommendations(\n        n=request.n,\n        p=request.p,\n        k=request.k,\n        temperature=request.temperature,\n        humidity=request.humidity,\n        ph=request.ph,\n        rainfall=request.rainfall,",
+        "detail": "backend.main",
+        "documentation": {}
+    },
+    {
+        "label": "get_cell_recommendations",
+        "kind": 2,
+        "importPath": "backend.main",
+        "description": "backend.main",
+        "peekOfCode": "def get_cell_recommendations(row: int, col: int):\n    \"\"\"Get crop recommendations for a specific cell based on its current soil state\"\"\"\n    global game_state\n    if game_state is None:\n        raise HTTPException(status_code=400, detail=\"Game not initialized\")\n    if not (0 <= row < 4 and 0 <= col < 4):\n        raise HTTPException(status_code=400, detail=\"Invalid cell coordinates\")\n    index = row * GRID_WIDTH + col\n    cell = game_state.grid[index]\n    recommendations = model.get_recommendations(",
+        "detail": "backend.main",
+        "documentation": {}
+    },
+    {
+        "label": "get_average_recommendations",
+        "kind": 2,
+        "importPath": "backend.main",
+        "description": "backend.main",
+        "peekOfCode": "def get_average_recommendations():\n    \"\"\"Get crop recommendations based on average soil state across all cells\"\"\"\n    global game_state\n    if game_state is None:\n        # Return default recommendations\n        recommendations = model.get_recommendations(\n            n=40, p=40, k=40, temperature=25, humidity=65, ph=6.5, rainfall=100, top_n=3\n        )\n        return {\"recommendations\": recommendations}\n    # Calculate averages",
+        "detail": "backend.main",
+        "documentation": {}
+    },
+    {
+        "label": "chat_with_lab",
+        "kind": 2,
+        "importPath": "backend.main",
+        "description": "backend.main",
+        "peekOfCode": "def chat_with_lab(request: ChatRequest):\n    \"\"\"\n    Chat with the laboratory AI assistant.\n    Uses Gemini to analyze game state, recent actions, and model predictions.\n    \"\"\"\n    global game_state\n    # Use frontend-provided game state if available, else use server state\n    current_state = None\n    if request.game_state:\n        # Build GameState from frontend data",
+        "detail": "backend.main",
+        "documentation": {}
+    },
+    {
+        "label": "ask_gemini",
+        "kind": 2,
+        "importPath": "backend.main",
+        "description": "backend.main",
+        "peekOfCode": "def ask_gemini(context: dict):\n    \"\"\"Get AI advice (mock implementation)\"\"\"\n    ctx = context.get(\"context\", \"\")\n    # Simple response based on keywords\n    if \"water\" in ctx.lower():\n        advice = \"Watering is essential for crop health. Monitor soil moisture levels.\"\n    elif \"fertilizer\" in ctx.lower() or \"nutrient\" in ctx.lower():\n        advice = \"Balance NPK nutrients based on your crop's needs.\"\n    elif \"harvest\" in ctx.lower():\n        advice = \"Harvest crops when they reach full maturity for maximum yield.\"",
+        "detail": "backend.main",
+        "documentation": {}
+    },
+    {
+        "label": "summarize_interactions",
+        "kind": 2,
+        "importPath": "backend.main",
+        "description": "backend.main",
+        "peekOfCode": "def summarize_interactions(interactions: dict):\n    \"\"\"Generate a summary of AI interactions (mock implementation)\"\"\"\n    interaction_list = interactions.get(\"interactions\", [])\n    if not interaction_list:\n        return {\"summary\": \"No interactions to summarize.\"}\n    summary_parts = []\n    for i, item in enumerate(interaction_list, 1):\n        human = item.get(\"human\", \"\")\n        ai = item.get(\"ai\", \"\")\n        summary_parts.append(f\"{i}. Query: {human[:50]}... → {ai[:50]}...\")",
+        "detail": "backend.main",
+        "documentation": {}
+    },
+    {
+        "label": "app",
+        "kind": 5,
+        "importPath": "backend.main",
+        "description": "backend.main",
+        "peekOfCode": "app = FastAPI(title=\"EcoFarm API\", version=\"2.0.0\")\napp.add_middleware(\n    CORSMiddleware,\n    allow_origins=[\"*\"],\n    allow_credentials=True,\n    allow_methods=[\"*\"],\n    allow_headers=[\"*\"],\n)\n# Global game state\nclock = Clock()",
+        "detail": "backend.main",
+        "documentation": {}
+    },
+    {
+        "label": "clock",
+        "kind": 5,
+        "importPath": "backend.main",
+        "description": "backend.main",
+        "peekOfCode": "clock = Clock()\ngame_state: Optional[GameState] = None\nmodel = Model()\nclass ChatRequest(BaseModel):\n    message: Optional[str] = None\n    recent_actions: List[str] = []\n    game_state: Optional[dict] = None  # Frontend can send game state directly\ndef get_region_from_elevation(elevation: float) -> str:\n    \"\"\"Determine region based on elevation in meters\"\"\"\n    if elevation < 300:",
+        "detail": "backend.main",
+        "documentation": {}
+    },
+    {
+        "label": "model",
+        "kind": 5,
+        "importPath": "backend.main",
+        "description": "backend.main",
+        "peekOfCode": "model = Model()\nclass ChatRequest(BaseModel):\n    message: Optional[str] = None\n    recent_actions: List[str] = []\n    game_state: Optional[dict] = None  # Frontend can send game state directly\ndef get_region_from_elevation(elevation: float) -> str:\n    \"\"\"Determine region based on elevation in meters\"\"\"\n    if elevation < 300:\n        return \"Terai\"\n    elif elevation < 2000:",
+        "detail": "backend.main",
+        "documentation": {}
+    },
+    {
+        "label": "messages",
+        "kind": 5,
+        "importPath": "backend.main",
+        "description": "backend.main",
+        "peekOfCode": "messages = []\n@app.post(\"/dpredict\")\nasync def predict_endpoint(message: str, image: UploadFile = File(...)):\n    contents = await image.read()  # bytes\n    file_obj = BytesIO(contents)  # BinaryIO-like object\n    disease = predict_disease(file_obj)\n    chatres = summarize_disease(messages, message, disease)\n    retdict = {\"chatres\": chatres}\n    messages.append(Message(role=\"user\", content=message))\n    messages.append(Message(role=\"assistant\", content=chatres))",
+        "detail": "backend.main",
+        "documentation": {}
+    },
+    {
+        "label": "Model",
+        "kind": 6,
+        "importPath": "backend.model",
+        "description": "backend.model",
+        "peekOfCode": "class Model:\n    \"\"\"ML Model for crop recommendation based on soil parameters\"\"\"\n    _instance = None\n    _df = None\n    def __new__(cls, *args, **kwargs):\n        \"\"\"Singleton pattern to avoid reloading data\"\"\"\n        if cls._instance is None:\n            cls._instance = super().__new__(cls)\n            cls._instance._initialized = False\n        return cls._instance",
+        "detail": "backend.model",
+        "documentation": {}
+    },
+    {
+        "label": "clock",
+        "kind": 5,
+        "importPath": "backend.test",
+        "description": "backend.test",
+        "peekOfCode": "clock = Clock()",
+        "detail": "backend.test",
+        "documentation": {}
+    },
+    {
+        "label": "_Known",
+        "kind": 6,
+        "importPath": "frontend.node_modules.flatted.python.flatted",
+        "description": "frontend.node_modules.flatted.python.flatted",
+        "peekOfCode": "class _Known:\n    def __init__(self):\n        self.key = []\n        self.value = []\nclass _String:\n    def __init__(self, value):\n        self.value = value\ndef _array_keys(value):\n    keys = []\n    i = 0",
+        "detail": "frontend.node_modules.flatted.python.flatted",
+        "documentation": {}
+    },
+    {
+        "label": "_String",
+        "kind": 6,
+        "importPath": "frontend.node_modules.flatted.python.flatted",
+        "description": "frontend.node_modules.flatted.python.flatted",
+        "peekOfCode": "class _String:\n    def __init__(self, value):\n        self.value = value\ndef _array_keys(value):\n    keys = []\n    i = 0\n    for _ in value:\n        keys.append(i)\n        i += 1\n    return keys",
+        "detail": "frontend.node_modules.flatted.python.flatted",
+        "documentation": {}
+    },
+    {
+        "label": "parse",
+        "kind": 2,
+        "importPath": "frontend.node_modules.flatted.python.flatted",
+        "description": "frontend.node_modules.flatted.python.flatted",
+        "peekOfCode": "def parse(value, *args, **kwargs):\n    json = _json.loads(value, *args, **kwargs)\n    wrapped = []\n    for value in json:\n        wrapped.append(_wrap(value))\n    input = []\n    for value in wrapped:\n        if isinstance(value, _String):\n            input.append(value.value)\n        else:",
+        "detail": "frontend.node_modules.flatted.python.flatted",
+        "documentation": {}
+    },
+    {
+        "label": "stringify",
+        "kind": 2,
+        "importPath": "frontend.node_modules.flatted.python.flatted",
+        "description": "frontend.node_modules.flatted.python.flatted",
+        "peekOfCode": "def stringify(value, *args, **kwargs):\n    known = _Known()\n    input = []\n    output = []\n    i = int(_index(known, input, value))\n    while i < len(input):\n        output.append(_transform(known, input, input[i]))\n        i += 1\n    return _json.dumps(output, *args, **kwargs)",
+        "detail": "frontend.node_modules.flatted.python.flatted",
         "documentation": {}
     }
 ]
