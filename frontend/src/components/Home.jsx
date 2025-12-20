@@ -1684,8 +1684,14 @@ export default function Home() {
                                 <>
                                     <style>{`@keyframes slideIn{from{transform:translateY(-10px);opacity:0}to{transform:translateY(0);opacity:1}} .toast-anim{animation:slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)}`}</style>
                                     <div className="absolute top-2 right-2 z-[9999] max-w-[240px] toast-anim">
-                                        <div className="rounded-xl bg-slate-900/95 px-3 py-2 text-xs font-medium text-white shadow-xl ring-1 ring-white/10 backdrop-blur-md leading-snug">
+                                        <div className="relative rounded-xl bg-[#21170F] px-3 py-2 pr-8 text-xs font-medium text-white shadow-xl ring-1 ring-white/10 backdrop-blur-md leading-snug">
                                             {toast}
+                                            <button
+                                                onClick={() => setToast(null)}
+                                                className="absolute right-1 top-1 rounded-lg p-1 text-white/50 hover:bg-white/10 hover:text-white transition-colors"
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+                                            </button>
                                         </div>
                                     </div>
                                 </>
