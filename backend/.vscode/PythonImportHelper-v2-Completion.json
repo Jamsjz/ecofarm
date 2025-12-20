@@ -44,29 +44,52 @@
         "documentation": {}
     },
     {
-        "label": "pandas",
+        "label": "time",
         "kind": 6,
         "isExtraImport": true,
-        "importPath": "pandas",
-        "description": "pandas",
-        "detail": "pandas",
+        "importPath": "time",
+        "description": "time",
+        "detail": "time",
         "documentation": {}
     },
     {
-        "label": "numpy",
-        "kind": 6,
+        "label": "dataclass",
+        "importPath": "dataclasses",
+        "description": "dataclasses",
         "isExtraImport": true,
-        "importPath": "numpy",
-        "description": "numpy",
-        "detail": "numpy",
+        "detail": "dataclasses",
         "documentation": {}
     },
     {
-        "label": "array",
-        "importPath": "numpy",
-        "description": "numpy",
+        "label": "dataclass",
+        "importPath": "dataclasses",
+        "description": "dataclasses",
         "isExtraImport": true,
-        "detail": "numpy",
+        "detail": "dataclasses",
+        "documentation": {}
+    },
+    {
+        "label": "SPEED",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "ACTIONS",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "GRID_WIDTH",
+        "importPath": "constants",
+        "description": "constants",
+        "isExtraImport": true,
+        "detail": "constants",
         "documentation": {}
     },
     {
@@ -91,6 +114,88 @@
         "description": "constants",
         "isExtraImport": true,
         "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "List",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "FastAPI",
+        "importPath": "fastapi",
+        "description": "fastapi",
+        "isExtraImport": true,
+        "detail": "fastapi",
+        "documentation": {}
+    },
+    {
+        "label": "CellState",
+        "importPath": "game_engine.engine",
+        "description": "game_engine.engine",
+        "isExtraImport": true,
+        "detail": "game_engine.engine",
+        "documentation": {}
+    },
+    {
+        "label": "GameState",
+        "importPath": "game_engine.engine",
+        "description": "game_engine.engine",
+        "isExtraImport": true,
+        "detail": "game_engine.engine",
+        "documentation": {}
+    },
+    {
+        "label": "Clock",
+        "importPath": "game_engine.clock",
+        "description": "game_engine.clock",
+        "isExtraImport": true,
+        "detail": "game_engine.clock",
+        "documentation": {}
+    },
+    {
+        "label": "Clock",
+        "importPath": "game_engine.clock",
+        "description": "game_engine.clock",
+        "isExtraImport": true,
+        "detail": "game_engine.clock",
+        "documentation": {}
+    },
+    {
+        "label": "CORSMiddleware",
+        "importPath": "fastapi.middleware.cors",
+        "description": "fastapi.middleware.cors",
+        "isExtraImport": true,
+        "detail": "fastapi.middleware.cors",
+        "documentation": {}
+    },
+    {
+        "label": "pandas",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "pandas",
+        "description": "pandas",
+        "detail": "pandas",
+        "documentation": {}
+    },
+    {
+        "label": "numpy",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "numpy",
+        "description": "numpy",
+        "detail": "numpy",
+        "documentation": {}
+    },
+    {
+        "label": "array",
+        "importPath": "numpy",
+        "description": "numpy",
+        "isExtraImport": true,
+        "detail": "numpy",
         "documentation": {}
     },
     {
@@ -175,6 +280,33 @@
         "documentation": {}
     },
     {
+        "label": "Clock",
+        "kind": 6,
+        "importPath": "game_engine.clock",
+        "description": "game_engine.clock",
+        "peekOfCode": "class Clock:\n    start_real: float = time.monotonic()\n    start_game: float = 0.0\n    speed: float = SPEED  # 1.0 = real time, 2.0 = 2x faster, 0 = paused\n    def now(self) -> float:\n        return self.start_game + (time.monotonic() - self.start_real) * self.speed",
+        "detail": "game_engine.clock",
+        "documentation": {}
+    },
+    {
+        "label": "GameState",
+        "kind": 6,
+        "importPath": "game_engine.engine",
+        "description": "game_engine.engine",
+        "peekOfCode": "class GameState:\n    location: str\n    gold: int\n    grid: List[\"CellState\"]\n@dataclass\nclass CellState:\n    n: int\n    p: int\n    k: int\n    rainfall: float",
+        "detail": "game_engine.engine",
+        "documentation": {}
+    },
+    {
+        "label": "CellState",
+        "kind": 6,
+        "importPath": "game_engine.engine",
+        "description": "game_engine.engine",
+        "peekOfCode": "class CellState:\n    n: int\n    p: int\n    k: int\n    rainfall: float\n    ph: float\n    humidity: float\n    temperature: float\n    def take_action(self, action: str):\n        action_dict = ACTIONS[action]",
+        "detail": "game_engine.engine",
+        "documentation": {}
+    },
+    {
         "label": "CROPS_USED",
         "kind": 5,
         "importPath": "constants",
@@ -184,11 +316,20 @@
         "documentation": {}
     },
     {
+        "label": "GRID_WIDTH",
+        "kind": 5,
+        "importPath": "constants",
+        "description": "constants",
+        "peekOfCode": "GRID_WIDTH = 4\nMODEL_ALPHA = 100\nMODEL_GOLDUNIT = 10\nSPEED = 1400\nMONTHS = [\n    \"Baisakh\",\n    \"Jestha\",\n    \"Asar\",\n    \"Shrawan\",\n    \"Bhadra\",",
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
         "label": "MODEL_ALPHA",
         "kind": 5,
         "importPath": "constants",
         "description": "constants",
-        "peekOfCode": "MODEL_ALPHA = 100\nMODEL_GOLDUNIT = 10",
+        "peekOfCode": "MODEL_ALPHA = 100\nMODEL_GOLDUNIT = 10\nSPEED = 1400\nMONTHS = [\n    \"Baisakh\",\n    \"Jestha\",\n    \"Asar\",\n    \"Shrawan\",\n    \"Bhadra\",\n    \"Ashwin\",",
         "detail": "constants",
         "documentation": {}
     },
@@ -197,16 +338,124 @@
         "kind": 5,
         "importPath": "constants",
         "description": "constants",
-        "peekOfCode": "MODEL_GOLDUNIT = 10",
+        "peekOfCode": "MODEL_GOLDUNIT = 10\nSPEED = 1400\nMONTHS = [\n    \"Baisakh\",\n    \"Jestha\",\n    \"Asar\",\n    \"Shrawan\",\n    \"Bhadra\",\n    \"Ashwin\",\n    \"Kartik\",",
         "detail": "constants",
         "documentation": {}
     },
     {
-        "label": "main",
+        "label": "SPEED",
+        "kind": 5,
+        "importPath": "constants",
+        "description": "constants",
+        "peekOfCode": "SPEED = 1400\nMONTHS = [\n    \"Baisakh\",\n    \"Jestha\",\n    \"Asar\",\n    \"Shrawan\",\n    \"Bhadra\",\n    \"Ashwin\",\n    \"Kartik\",\n    \"Mangsir\",",
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "MONTHS",
+        "kind": 5,
+        "importPath": "constants",
+        "description": "constants",
+        "peekOfCode": "MONTHS = [\n    \"Baisakh\",\n    \"Jestha\",\n    \"Asar\",\n    \"Shrawan\",\n    \"Bhadra\",\n    \"Ashwin\",\n    \"Kartik\",\n    \"Mangsir\",\n    \"Poush\",",
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "REGIONS",
+        "kind": 5,
+        "importPath": "constants",
+        "description": "constants",
+        "peekOfCode": "REGIONS = {\n    \"Terai\": {\n        \"temperature\": 30.0,\n        \"humidity\": 80.0,\n        \"rainfall\": 150.0,\n        \"moisture\": 60.0,\n        \"desc\": \"Hot, humid plains of southern Nepal; major rice, maize, jute, sugarcane, cotton belt.\",\n    },\n    \"Hilly\": {\n        \"temperature\": 20.0,",
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "CROPS",
+        "kind": 5,
+        "importPath": "constants",
+        "description": "constants",
+        "peekOfCode": "CROPS = {\n    \"Rice\": {\n        \"cost\": {\"Terai\": 150, \"Hilly\": 180, \"Himalayan\": 220},\n        \"days\": 12,\n        \"harvest_gold\": 220,\n        \"ideal\": {\n            \"moisture\": 80,\n            \"temperature\": 24,\n            \"n\": 80,\n            \"p\": 48,",
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "ACTIONS",
+        "kind": 5,
+        "importPath": "constants",
+        "description": "constants",
+        "peekOfCode": "ACTIONS = {\n    \"plough\": {\n        \"name\": \"Tractor Ploughing\",\n        \"cost\": {\"Terai\": 90, \"Hilly\": 110, \"Himalayan\": 130},\n        \"effect\": {\"moisture\": -5},\n        \"desc\": \"Primary tillage using tractor or power tiller, common in Terai and accessible hills.\",\n        \"duration\": 3,\n    },\n    \"irrigate\": {\n        \"name\": \"Canal / Tube-well Irrigation\",",
+        "detail": "constants",
+        "documentation": {}
+    },
+    {
+        "label": "home",
         "kind": 2,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "def main():\n    print(\"Hello from ecofarm!\")\nif __name__ == \"__main__\":\n    main()",
+        "peekOfCode": "def home():\n    return {\"time\": clock.now()}\n@app.post(\"/state\")\ndef get_game_state(gamestate: GameState):\n    global state\n    state = gamestate\n@app.put(\"/state\")\ndef update_game_state(gamestate: GameState):\n    global state\n    print(state.location)",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "get_game_state",
+        "kind": 2,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "def get_game_state(gamestate: GameState):\n    global state\n    state = gamestate\n@app.put(\"/state\")\ndef update_game_state(gamestate: GameState):\n    global state\n    print(state.location)\n    state = gamestate\n    print(state.location)\n@app.get(\"/state\")",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "update_game_state",
+        "kind": 2,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "def update_game_state(gamestate: GameState):\n    global state\n    print(state.location)\n    state = gamestate\n    print(state.location)\n@app.get(\"/state\")\ndef get_game_state():\n    global state\n    return state\n@app.get(\"/state/grid/{row}/{col}\")",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "get_game_state",
+        "kind": 2,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "def get_game_state():\n    global state\n    return state\n@app.get(\"/state/grid/{row}/{col}\")\ndef get_grid_state(row: int, col: int):\n    global state\n    index = row * GRID_WIDTH + col\n    return state.grid[index]\n@app.put(\"/state/grid/{row}/{col}\")\ndef update_grid_state(row: int, col: int, cellstate: CellState):",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "get_grid_state",
+        "kind": 2,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "def get_grid_state(row: int, col: int):\n    global state\n    index = row * GRID_WIDTH + col\n    return state.grid[index]\n@app.put(\"/state/grid/{row}/{col}\")\ndef update_grid_state(row: int, col: int, cellstate: CellState):\n    global state\n    index = row * GRID_WIDTH + col\n    state.grid[index] = cellstate\n    return state.grid[index]",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "update_grid_state",
+        "kind": 2,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "def update_grid_state(row: int, col: int, cellstate: CellState):\n    global state\n    index = row * GRID_WIDTH + col\n    state.grid[index] = cellstate\n    return state.grid[index]",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "app",
+        "kind": 5,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "app = FastAPI()\napp.add_middleware(\n    CORSMiddleware,\n    allow_origins=[\"*\"],\n    allow_credentials=True,\n    allow_methods=[\"*\"],\n    allow_headers=[\"*\"],\n)\nglobal clock\nclock = Clock()",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "clock",
+        "kind": 5,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "clock = Clock()\n@app.get(\"/time\")\ndef home():\n    return {\"time\": clock.now()}\n@app.post(\"/state\")\ndef get_game_state(gamestate: GameState):\n    global state\n    state = gamestate\n@app.put(\"/state\")\ndef update_game_state(gamestate: GameState):",
         "detail": "main",
         "documentation": {}
     },
@@ -217,6 +466,15 @@
         "description": "model",
         "peekOfCode": "class Model:\n    def __init__(\n        self,\n        alpha=MODEL_ALPHA,\n        goldunit=MODEL_GOLDUNIT,\n        crops_used=CROPS_USED,\n    ):\n        self._df = pd.read_csv(\"./data/data.csv\")\n        self.alpha = alpha\n        self.goldunit = goldunit",
         "detail": "model",
+        "documentation": {}
+    },
+    {
+        "label": "clock",
+        "kind": 5,
+        "importPath": "test",
+        "description": "test",
+        "peekOfCode": "clock = Clock()",
+        "detail": "test",
         "documentation": {}
     }
 ]
