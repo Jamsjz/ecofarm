@@ -2,7 +2,7 @@
 
 ## Component diagram (mermaid)
 
-```
+```mermaid
 graph LR
 F["Frontend (React)"] -->|"HTTP / WebSocket"| B["Backend (FastAPI)"]
 B -->|"imports & calls"| G["Game Engine (game_engine/*)"]
