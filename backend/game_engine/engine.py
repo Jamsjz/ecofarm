@@ -13,6 +13,7 @@ class CellState(BaseModel):
     humidity: float = 60
     temperature: float = 25
     moisture: float = 50
+    wind_speed: float = 0
     # Crop state
     crop: Optional[str] = None
     stage: int = 0

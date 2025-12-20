@@ -182,20 +182,6 @@ const uid = () => (globalThis.crypto?.randomUUID ? globalThis.crypto.randomUUID(
 const stageFrom = (p) => (p < 35 ? STAGE.SEED : p < 75 ? STAGE.SPROUT : STAGE.MATURE);
 const DAY_TICKS = 100; // Synced with tod loop (0-99) for correct globalTick calculation
 
-function detectBiome(raw) {
-    const q = String(raw || '').toLowerCase();
-    if (['chitwan', 'lumbini', 'biratnagar', 'birgunj', 'janakpur', 'nepalgunj', 'dhangadhi', 'itahari'].some((k) => q.includes(k))) return BIOME.TERAI;
-    if (['kathmandu', 'pokhara', 'ilam', 'dhulikhel', 'banepa', 'bhaktapur', 'lalitpur', 'gorkha', 'syangja'].some((k) => q.includes(k))) return BIOME.HILLY;
-    if (['mustang', 'solukhumbu', 'manang', 'jumla', 'dolpa', 'humla', 'mugu', 'rasuwa'].some((k) => q.includes(k))) return BIOME.MOUNTAIN;
-    return BIOME.HILLY;
-}
-
-function defaultsFor(b) {
-    if (b === BIOME.TERAI) return { t: 32, sun: 78, rain: 58, wind: 28 };
-    if (b === BIOME.MOUNTAIN) return { t: 9, sun: 56, rain: 34, wind: 42 };
-    return { t: 22, sun: 64, rain: 48, wind: 34 };
-}
-
 function soilStyle(b) {
     if (b === BIOME.TERAI)
         return {
@@ -272,17 +258,16 @@ export default function Home() {
 
     // Helpers for soil suitability
     const getSoilParams = React.useCallback(() => {
-        const defaults = defaultsFor(biome);
         return {
             n: 40 + (rain / 10),
             p: 40,
             k: 40,
             temperature: temp,
-            humidity: defaults.sun, // Using sun as proxy for humidity matches fetchRecommendations
+            humidity: sun, // Using sun as proxy for humidity matches fetchRecommendations
             ph: 6.5,
             rainfall: rain * 2.5
         };
-    }, [biome, rain, temp]);
+    }, [rain, temp, sun]);
 
     const getSuitabilityScore = React.useCallback((species) => {
         const cropDef = BACKEND_CROPS[species];
@@ -432,13 +417,12 @@ export default function Home() {
         setRecsLoading(true);
         try {
             // Build average soil params from environment
-            const defaults = defaultsFor(biome);
             const reqBody = {
                 n: 40 + (rain / 10),
                 p: 40,
                 k: 40,
                 temperature: temp,
-                humidity: defaults.sun,
+                humidity: sun,
                 ph: 6.5,
                 rainfall: rain * 2.5
             };
@@ -525,7 +509,7 @@ export default function Home() {
         envRef.current = { sun, rain, wind, biome, isNight, rainHint, temp, wx };
     }, [sun, rain, wind, biome, isNight, rainHint, temp, wx]);
 
-    const WEATHER_API_KEY = import.meta?.env?.VITE_WEATHER_API_KEY;
+
     const geoAbortRef = React.useRef(null);
     const wxAbortRef = React.useRef(null);
     const wxRefreshAbortRef = React.useRef(null);
@@ -578,70 +562,12 @@ export default function Home() {
     const particlesRef = React.useRef([]);
     const rafRef = React.useRef(null);
 
-    const syncFromWeather = React.useCallback((wxData, forceTime = false) => {
-        const cur = wxData?.current;
-        if (!cur) return;
 
-        const tempC = Number(cur?.temp_c);
-        const windKph = Number(cur?.wind_kph);
-        const precipMm = Number(cur?.precip_mm);
-        const humidity = Number(cur?.humidity);
-        const cloud = Number(cur?.cloud);
-        const uv = Number(cur?.uv);
-        const isDayWx = Boolean(cur?.is_day);
-        const conditionText = String(cur?.condition?.text || '').trim();
-        const lastUpdated = String(cur?.last_updated || '').trim();
-
-        setWx({ tempC, windKph, precipMm, humidity, cloud, uv, isDay: isDayWx, conditionText, lastUpdated });
-
-        if (Number.isFinite(tempC)) setTemp(Math.round(tempC));
-
-        if (!windManualRef.current && Number.isFinite(windKph)) {
-            setWind(clamp(Math.round((windKph / 45) * 100), 0, 100));
-        }
-
-        const rainingText = /rain|drizzle|shower|thunder/i.test(conditionText);
-        setRainHint(Boolean(rainingText));
-        if (!rainManualRef.current && Number.isFinite(precipMm)) {
-            const base = clamp(Math.round(precipMm * 18), 0, 100);
-            const boosted = rainingText ? Math.max(base, 55) : base;
-            setRain(boosted);
-        }
-
-        if (!sunManualRef.current) {
-            if (Number.isFinite(cloud)) {
-                const s = isDayWx ? clamp(Math.round(100 - cloud), 10, 100) : clamp(Math.round(20 - cloud / 5), 0, 25);
-                setSun(s);
-            } else if (Number.isFinite(uv) && isDayWx) {
-                setSun(clamp(Math.round(40 + uv * 7), 0, 100));
-            }
-        }
-
-        const localtime = String(wxData?.location?.localtime || '').trim();
-        const m = localtime.match(/\b(\d{1,2}):(\d{2})\b/);
-        if ((forceTime || !running) && m) {
-            const hh = Number(m[1]);
-            const mm = Number(m[2]);
-            if (Number.isFinite(hh) && Number.isFinite(mm)) {
-                const todNext = clamp(Math.round(((hh * 60 + mm) / (24 * 60)) * 100), 0, 100);
-                setTod(todNext);
-            }
-        }
-    }, [running]);
 
     const applyLoc = React.useCallback((text) => {
         sunManualRef.current = false;
         rainManualRef.current = false;
         windManualRef.current = false;
-
-        const b = detectBiome(text);
-        const d = defaultsFor(b);
-        setBiome(b);
-        setTemp(d.t);
-        setSun(d.sun);
-        setRain(d.rain);
-        setWind(d.wind);
-        setToast(`Biome updated to ${b}.`);
 
         try {
             if (geoAbortRef.current) geoAbortRef.current.abort();
@@ -651,6 +577,9 @@ export default function Home() {
 
         const q = String(text || '').trim();
         if (!q) return;
+        
+        setToast(`Searching for ${q}...`);
+
         void (async () => {
             try {
                 const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=np&q=${encodeURIComponent(q)}`;
@@ -664,26 +593,15 @@ export default function Home() {
                 const hit = Array.isArray(data) ? data[0] : null;
                 const lat = hit?.lat ? Number(hit.lat) : NaN;
                 const lon = hit?.lon ? Number(hit.lon) : NaN;
-                if (!Number.isFinite(lat) || !Number.isFinite(lon)) return;
+                if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+                    setToast('Location not found.');
+                    return;
+                }
                 wxCoordsRef.current = { lat, lon };
                 const resolvedLabel = hit?.display_name || q;
                 setMapCenter([lat, lon]);
                 setMapZoom(12);
                 setMapLabel(resolvedLabel);
-
-                const b2 = detectBiome(resolvedLabel);
-                const d2 = defaultsFor(b2);
-                setBiome(b2);
-                setTemp(d2.t);
-                setSun(d2.sun);
-                setRain(d2.rain);
-                setWind(d2.wind);
-
-                const k = String(WEATHER_API_KEY || '').trim();
-                if (!k) {
-                    setWx(null);
-                    return;
-                }
 
                 try {
                     if (wxAbortRef.current) wxAbortRef.current.abort();
@@ -692,13 +610,24 @@ export default function Home() {
                 wxAbortRef.current = wxController;
                 setWxBusy(true);
                 try {
-                    const wxUrl = `https://api.weatherapi.com/v1/current.json?key=${encodeURIComponent(k)}&q=${lat},${lon}&aqi=no`;
+                    const wxUrl = `${API_URL}/weather?lat=${lat}&lng=${lon}`;
                     const wxRes = await fetch(wxUrl, { method: 'GET', signal: wxController.signal });
-                    if (!wxRes.ok) return;
+                    if (!wxRes.ok) throw new Error('Backend weather fetch failed');
                     const wxData = await wxRes.json();
-                    syncFromWeather(wxData, true);
+                    
+                    if (wxData.region) setBiome(wxData.region);
+                    if (wxData.weather) {
+                        setTemp(Math.round(wxData.weather.temperature));
+                        setRain(Math.round(wxData.weather.rain));
+                        setWind(Math.round(wxData.weather.wind_speed));
+                        const cloud = wxData.weather.cloud_cover || 0;
+                        setSun(Math.round(100 - cloud));
+                        setToast(`Updated weather for ${wxData.location || resolvedLabel}`);
+                    }
                 } catch (e) {
                     if (e?.name === 'AbortError') return;
+                    console.error(e);
+                    setToast('Failed to fetch weather data from backend.');
                 } finally {
                     setWxBusy(false);
                 }
@@ -707,15 +636,13 @@ export default function Home() {
                 setToast('Map search failed — check your internet connection or try a clearer location name.');
             }
         })();
-    }, [WEATHER_API_KEY, syncFromWeather]);
+    }, []);
 
     React.useEffect(() => {
         applyLoc(loc);
     }, []);
 
     React.useEffect(() => {
-        const k = String(WEATHER_API_KEY || '').trim();
-        if (!k) return;
         const tick = () => {
             const coords = wxCoordsRef.current;
             if (!coords?.lat || !coords?.lon) return;
@@ -726,11 +653,18 @@ export default function Home() {
             wxRefreshAbortRef.current = controller;
             void (async () => {
                 try {
-                    const wxUrl = `https://api.weatherapi.com/v1/current.json?key=${encodeURIComponent(k)}&q=${coords.lat},${coords.lon}&aqi=no`;
+                    const wxUrl = `${API_URL}/weather?lat=${coords.lat}&lng=${coords.lon}`;
                     const wxRes = await fetch(wxUrl, { method: 'GET', signal: controller.signal });
                     if (!wxRes.ok) return;
                     const wxData = await wxRes.json();
-                    syncFromWeather(wxData, false);
+                    
+                    if (wxData.weather) {
+                        setTemp(Math.round(wxData.weather.temperature));
+                        setRain(Math.round(wxData.weather.rain));
+                        setWind(Math.round(wxData.weather.wind_speed));
+                        const cloud = wxData.weather.cloud_cover || 0;
+                        setSun(Math.round(100 - cloud));
+                    }
                 } catch (e) {
                     if (e?.name === 'AbortError') return;
                 }
@@ -744,7 +678,7 @@ export default function Home() {
                 if (wxRefreshAbortRef.current) wxRefreshAbortRef.current.abort();
             } catch { }
         };
-    }, [WEATHER_API_KEY, syncFromWeather]);
+    }, []);
 
     const dailyAdviceRef = React.useRef({ day: 0, lastWarnAt: 0, lastKey: '' });
 
