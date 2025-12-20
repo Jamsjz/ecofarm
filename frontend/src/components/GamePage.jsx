@@ -250,6 +250,27 @@ const GamePage = () => {
                     </div>
                 </div>
 
+                {selection.size === 1 && (() => {
+                    const idx = Array.from(selection)[0];
+                    const cell = gameState?.grid?.[idx];
+                    if (!cell) return null;
+                    return (
+                        <div className="action-group">
+                            <h3>Field Analysis</h3>
+                            <div style={{ fontSize: '0.9rem', display: 'flex', flexDirection: 'column', gap: '4px', background: 'rgba(0,0,0,0.2)', padding: '10px', borderRadius: '6px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Temp:</span> <span>{cell.temperature?.toFixed(1)}°C</span></div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Rain:</span> <span>{cell.rainfall?.toFixed(1)}mm</span></div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Wind:</span> <span>{cell.wind_speed?.toFixed(1)}km/h</span></div>
+                                <hr style={{ borderColor: 'rgba(255,255,255,0.1)', width: '100%' }} />
+                                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>pH:</span> <span>{cell.ph?.toFixed(2)}</span></div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>N:</span> <span>{cell.n?.toFixed(1)}</span></div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>P:</span> <span>{cell.p?.toFixed(1)}</span></div>
+                                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>K:</span> <span>{cell.k?.toFixed(1)}</span></div>
+                            </div>
+                        </div>
+                    );
+                })()}
+
                 <div className="action-group">
                     <h3>Tools</h3>
                     {Object.entries(meta.actions).map(([key, act]) => (
@@ -339,6 +360,8 @@ const GamePage = () => {
 const Cell = ({ cell, selected, onClick }) => {
     const moistureColor = `rgba(52, 152, 219, ${cell.moisture / 100})`;
     const weedOverlay = cell.weed > 30 ? `rgba(39, 174, 96, ${cell.weed / 200})` : 'transparent';
+    
+    const title = `Temp: ${cell.temperature?.toFixed(1)}°C\nRain: ${cell.rainfall?.toFixed(1)}mm\nWind: ${cell.wind_speed?.toFixed(1)}km/h\nMoisture: ${Math.round(cell.moisture)}%`;
 
     let content = "";
     if (cell.crop) {
@@ -353,6 +376,7 @@ const Cell = ({ cell, selected, onClick }) => {
         <div
             className={`cell ${selected ? 'selected' : ''}`}
             onClick={onClick}
+            title={title}
             style={{
                 backgroundColor: '#e67e22',
                 backgroundImage: `linear-gradient(${moistureColor}, ${moistureColor}), linear-gradient(${weedOverlay}, ${weedOverlay})`
