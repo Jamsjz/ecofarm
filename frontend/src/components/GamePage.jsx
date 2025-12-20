@@ -4,6 +4,8 @@ import { MapContainer, TileLayer, Marker, useMapEvents, Popup } from 'react-leaf
 import 'leaflet/dist/leaflet.css';
 import '../App.css';
 import { useNavigate } from 'react-router-dom';
+import LabChat from './LabChat';
+
 
 // Fix Leaflet icon issue
 import L from 'leaflet';
@@ -17,7 +19,7 @@ let DefaultIcon = L.icon({
 });
 L.Marker.prototype.options.icon = DefaultIcon;
 
-const API_URL = "http://localhost:5000";
+const API_URL = "http://localhost:8000";
 
 const GamePage = () => {
     const navigate = useNavigate();
@@ -25,7 +27,6 @@ const GamePage = () => {
     const [meta, setMeta] = useState({ crops: {}, actions: {} });
     const [selection, setSelection] = useState(new Set());
     const [logs, setLogs] = useState([]);
-    const [geminiMsg, setGeminiMsg] = useState("Welcome! Select plots to farm.");
     const [started, setStarted] = useState(false);
     const [loading, setLoading] = useState(false);
 
@@ -133,7 +134,7 @@ const GamePage = () => {
                 indices: Array.from(selection)
             });
             addLog(res.data.msg);
-            askGemini("Advice on action " + key);
+            // LabChat will automatically detect the log change and trigger advice
         } catch (err) {
             addLog(err.response?.data?.error || "Action failed");
         } finally {
@@ -157,16 +158,30 @@ const GamePage = () => {
         }
     };
 
-    const askGemini = async (context) => {
-        try {
-            const res = await axios.post(`${API_URL}/gemini`, { context });
-            const advice = res.data.advice;
-            setGeminiMsg(advice);
-            // Track history
-            setAiHistory(prev => [...prev, { human: context, ai: advice }]);
-        } catch (e) {
-            setGeminiMsg("EcoBot is sleeping...");
-        }
+    const handleNewChatMessage = (msg) => {
+        // msg is { sender: 'user'|'ai', text: '...' }
+        // We want to group them into { human: ..., ai: ... } for the summary
+        // This is a bit tricky since they come in one by one.
+        // For simplicity, we'll just log them as individual interactions or try to pair them.
+        
+        setAiHistory(prev => {
+            const last = prev[prev.length - 1];
+            if (msg.sender === 'user') {
+                // Start a new interaction
+                return [...prev, { human: msg.text, ai: "..." }];
+            } else if (msg.sender === 'ai') {
+                // If the last one has a pending AI response, update it
+                if (last && last.ai === "...") {
+                    const newHistory = [...prev];
+                    newHistory[newHistory.length - 1].ai = msg.text;
+                    return newHistory;
+                } else {
+                    // It's an unsolicited AI message (auto-response)
+                    return [...prev, { human: "(Auto-Analysis)", ai: msg.text }];
+                }
+            }
+            return prev;
+        });
     };
 
     // --- SUMMARY LOGIC ---
@@ -280,13 +295,10 @@ const GamePage = () => {
 
             {/* 3. RIGHT: INFO & CHAT */}
             <aside className="panel right-panel">
-                <div className="gemini-box">
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <h3>🤖 EcoBot</h3>
-                        <button onClick={handleOpenSummary} className="small-btn" style={{ background: '#8e44ad', color: 'white' }}>Summary</button>
-                    </div>
-                    <p>{geminiMsg}</p>
+                <div style={{ marginBottom: '10px' }}>
+                    <button onClick={handleOpenSummary} className="small-btn" style={{ background: '#8e44ad', color: 'white', width: '100%' }}>View Session Summary</button>
                 </div>
+                <LabChat gameState={gameState} logs={logs} onNewMessage={handleNewChatMessage} />
 
                 <div className="info-box">
                     <h3>Top Recommendations</h3>

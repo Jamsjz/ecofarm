@@ -1,7 +1,9 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List, Optional
+from pydantic import BaseModel
 import numpy as np
+
 
 from game_engine.engine import (
     CellState, GameState, BatchActionRequest, 
@@ -10,6 +12,7 @@ from game_engine.engine import (
 from game_engine.clock import Clock
 from constants import GRID_WIDTH, CROPS, ACTIONS, REGIONS
 from model import Model
+from chat_service import get_chat_response
 
 app = FastAPI(title="EcoFarm API", version="2.0.0")
 
@@ -25,6 +28,13 @@ app.add_middleware(
 clock = Clock()
 game_state: Optional[GameState] = None
 model = Model()
+
+
+class ChatRequest(BaseModel):
+    message: Optional[str] = None
+    recent_actions: List[str] = []
+    game_state: Optional[dict] = None  # Frontend can send game state directly
+
 
 
 def get_region_from_elevation(elevation: float) -> str:
@@ -431,6 +441,79 @@ def get_average_recommendations():
 
 
 # ============== GEMINI/AI ENDPOINTS ==============
+
+@app.post("/chat")
+def chat_with_lab(request: ChatRequest):
+    """
+    Chat with the laboratory AI assistant.
+    Uses Gemini to analyze game state, recent actions, and model predictions.
+    """
+    global game_state
+    
+    # Use frontend-provided game state if available, else use server state
+    current_state = None
+    if request.game_state:
+        # Build GameState from frontend data
+        try:
+            grid_data = request.game_state.get('grid', [])
+            cells = []
+            for g in grid_data:
+                cells.append(CellState(
+                    n=g.get('n', 40),
+                    p=g.get('p', 40),
+                    k=g.get('k', 40),
+                    rainfall=g.get('rainfall', 100),
+                    ph=g.get('ph', 6.5),
+                    humidity=g.get('humidity', 60),
+                    temperature=g.get('temperature', 25),
+                    moisture=g.get('moisture', 50),
+                    crop=g.get('crop'),
+                    stage=int(g.get('stage', 0)),
+                    max_stage=int(g.get('max_stage', 100)),
+                    weed=g.get('weed', 0),
+                    health=g.get('health', 100)
+                ))
+            current_state = GameState(
+                location=request.game_state.get('location', 'Unknown'),
+                region=request.game_state.get('region', 'Hilly'),
+                gold=request.game_state.get('gold', 1000),
+                day=request.game_state.get('day', 1),
+                grid=cells if cells else [CellState() for _ in range(16)]
+            )
+        except Exception as e:
+            print(f"Error parsing frontend game state: {e}")
+            current_state = game_state
+    else:
+        current_state = game_state
+    
+    if current_state is None:
+        # Create a default state for chat if nothing available
+        current_state = GameState(
+            location="Default",
+            region="Hilly",
+            gold=1000,
+            day=1,
+            grid=[CellState() for _ in range(16)]
+        )
+    
+    # Get predictions for all cells
+    predictions = {}
+    for i, cell in enumerate(current_state.grid):
+        # params order: ['N', 'P', 'K', 'temperature', 'humidity', 'ph', 'rainfall']
+        params = np.array([cell.n, cell.p, cell.k, cell.temperature, cell.humidity, cell.ph, cell.rainfall])
+        preds = model.predict(params)
+        # Get top 3 suitable crops (lowest distance)
+        sorted_preds = sorted(preds.items(), key=lambda x: x[1])[:3]
+        predictions[f"Cell {i}"] = sorted_preds
+
+    response = get_chat_response(
+        message=request.message,
+        game_state=current_state,
+        recent_actions=request.recent_actions,
+        predictions=predictions
+    )
+    
+    return {"response": response}
 
 @app.post("/gemini")
 def ask_gemini(context: dict):
