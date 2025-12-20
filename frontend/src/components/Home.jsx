@@ -1,5 +1,5 @@
 import React from 'react';
-import { CloudRain, Droplets, FlaskConical, Leaf, MapPin, Moon, Skull, Sun, Trash2, Wind } from 'lucide-react';
+import { CloudRain, Droplets, FlaskConical, Leaf, MapPin, Moon, Skull, Sun, Trash2, Wind, Grid3X3 } from 'lucide-react';
 import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -7,35 +7,171 @@ import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 
+// Backend API URL
+const API_URL = 'http://localhost:8000';
+
 const BIOME = { TERAI: 'Terai', HILLY: 'Hilly', MOUNTAIN: 'Mountain' };
 const STAGE = { SEED: 'Seed', SPROUT: 'Sprout', MATURE: 'Mature' };
 const ACTION = { WATER: 'Water', INSECTICIDE: 'Insecticide', PESTICIDE: 'Pesticide' };
 const NURSERY = [
     { species: 'Rice', emoji: '🌾', diff: 3, pref: BIOME.TERAI },
-    { species: 'Mustard', emoji: '🌼', diff: 2, pref: BIOME.TERAI },
-    { species: 'Maize', emoji: '🌽', diff: 2, pref: BIOME.HILLY },
-    { species: 'Tea', emoji: '🍵', diff: 4, pref: BIOME.HILLY },
-    { species: 'Millet', emoji: '🌿', diff: 3, pref: BIOME.MOUNTAIN },
-    { species: 'Potato', emoji: '🥔', diff: 2, pref: BIOME.MOUNTAIN },
+    { species: 'Maize', emoji: '玉米', diff: 2, pref: BIOME.HILLY },
+    { species: 'Banana', emoji: '🍌', diff: 3, pref: BIOME.TERAI },
+    { species: 'Mango', emoji: '🥭', diff: 3, pref: BIOME.TERAI },
     { species: 'Apple', emoji: '🍎', diff: 4, pref: BIOME.MOUNTAIN },
+    { species: 'Jute', emoji: '🌿', diff: 3, pref: BIOME.TERAI },
+    { species: 'Papaya', emoji: '🍈', diff: 3, pref: BIOME.TERAI },
+    { species: 'Lentil', emoji: '🫘', diff: 2, pref: BIOME.HILLY },
+    { species: 'Orange', emoji: '🍊', diff: 3, pref: BIOME.HILLY },
+    { species: 'Cotton', emoji: '☁️', diff: 3, pref: BIOME.TERAI },
 ];
 
 const CROP_PROFILES = {
     Rice: { daysToMature: 120, waterEvery: 50, waterEveryDrought: 35, insecticideEveryDays: 14, pesticideEveryDays: 21 },
-    Mustard: { daysToMature: 95, waterEvery: 220, waterEveryDrought: 140, insecticideEveryDays: 21, pesticideEveryDays: 28 },
-    Maize: { daysToMature: 110, waterEvery: 160, waterEveryDrought: 110, insecticideEveryDays: 21, pesticideEveryDays: 28 },
-    Tea: { daysToMature: 200, waterEvery: 140, waterEveryDrought: 90, insecticideEveryDays: 21, pesticideEveryDays: 28 },
-    Millet: { daysToMature: 90, waterEvery: 260, waterEveryDrought: 160, insecticideEveryDays: 21, pesticideEveryDays: 28 },
-    Potato: { daysToMature: 95, waterEvery: 140, waterEveryDrought: 90, insecticideEveryDays: 14, pesticideEveryDays: 21 },
-    Apple: { daysToMature: 180, waterEvery: 420, waterEveryDrought: 260, insecticideEveryDays: 28, pesticideEveryDays: 35 },
+    Maize: { daysToMature: 100, waterEvery: 160, waterEveryDrought: 110, insecticideEveryDays: 21, pesticideEveryDays: 28 },
+    Banana: { daysToMature: 180, waterEvery: 140, waterEveryDrought: 90, insecticideEveryDays: 21, pesticideEveryDays: 28 },
+    Mango: { daysToMature: 180, waterEvery: 220, waterEveryDrought: 140, insecticideEveryDays: 21, pesticideEveryDays: 28 },
+    Apple: { daysToMature: 200, waterEvery: 420, waterEveryDrought: 260, insecticideEveryDays: 28, pesticideEveryDays: 35 },
+    Jute: { daysToMature: 140, waterEvery: 160, waterEveryDrought: 100, insecticideEveryDays: 14, pesticideEveryDays: 21 },
+    Papaya: { daysToMature: 160, waterEvery: 140, waterEveryDrought: 90, insecticideEveryDays: 14, pesticideEveryDays: 21 },
+    Lentil: { daysToMature: 110, waterEvery: 200, waterEveryDrought: 130, insecticideEveryDays: 14, pesticideEveryDays: 21 },
+    Orange: { daysToMature: 180, waterEvery: 220, waterEveryDrought: 140, insecticideEveryDays: 21, pesticideEveryDays: 28 },
+    Cotton: { daysToMature: 150, waterEvery: 160, waterEveryDrought: 100, insecticideEveryDays: 21, pesticideEveryDays: 28 },
 };
 const defaultCropProfile = { daysToMature: 100, waterEvery: 180, waterEveryDrought: 120, insecticideEveryDays: 21, pesticideEveryDays: 28 };
 const cropProfileFor = (species) => CROP_PROFILES[species] || defaultCropProfile;
 
+const BACKEND_ACTIONS = {
+    "manual_plough": {
+        "name": "Manual Ploughing",
+        "cost": { "Terai": 30, "Hilly": 35, "Himalayan": 40 },
+        "effect": { "moisture": -2 },
+        "desc": "Traditional ploughing using oxen or hand tools.",
+        "duration": "High (12h)",
+        "durationTicks": 10,
+        "icon": "🐂"
+    },
+    "plough": {
+        "name": "Tractor Ploughing",
+        "cost": { "Terai": 90, "Hilly": 110, "Himalayan": 130 },
+        "effect": { "moisture": -5 },
+        "desc": "Primary tillage using tractor or power tiller.",
+        "duration": "Medium (6h)",
+        "durationTicks": 5,
+        "icon": "🚜"
+    },
+    "irrigate": {
+        "name": "Canal / Tube-well Irrigation",
+        "cost": { "Terai": 70, "Hilly": 90, "Himalayan": 110 },
+        "effect": { "moisture": 20, "temperature": -1 },
+        "desc": "Flood or furrow irrigation.",
+        "duration": "Low (4h)",
+        "durationTicks": 4,
+        "icon": "💧"
+    },
+    "fertilizer/chemical/nitrogen": {
+        "name": "Urea (46% N)",
+        "cost": { "Terai": 60, "Hilly": 65, "Himalayan": 70 },
+        "effect": { "n": 30, "p": 0, "k": 0, "ph": -0.1 },
+        "desc": "Common nitrogen fertilizer.",
+        "duration": "Low (2h)",
+        "durationTicks": 2,
+        "icon": "🧪"
+    },
+    "fertilizer/chemical/phosphorus": {
+        "name": "DAP (18-46-0)",
+        "cost": { "Terai": 70, "Hilly": 75, "Himalayan": 80 },
+        "effect": { "n": 10, "p": 25, "k": 0, "ph": -0.05 },
+        "desc": "Diammonium phosphate.",
+        "duration": "Low (2h)",
+        "durationTicks": 2,
+        "icon": "🧪"
+    },
+    "fertilizer/chemical/potassium": {
+        "name": "MOP (0-0-60)",
+        "cost": { "Terai": 65, "Hilly": 70, "Himalayan": 75 },
+        "effect": { "n": 0, "p": 0, "k": 25 },
+        "desc": "Muriate of potash.",
+        "duration": "Low (2h)",
+        "durationTicks": 2,
+        "icon": "🧪"
+    },
+    "fertilizer/organic/fym": {
+        "name": "Farmyard Manure",
+        "cost": { "Terai": 50, "Hilly": 55, "Himalayan": 60 },
+        "effect": { "n": 5, "p": 5, "k": 5, "ph": 0.05 },
+        "desc": "Cattle/buffalo manure and compost.",
+        "duration": "Medium (8h)",
+        "durationTicks": 7,
+        "icon": "💩"
+    },
+    "mulch": {
+        "name": "Mulching",
+        "cost": { "Terai": 40, "Hilly": 45, "Himalayan": 50 },
+        "effect": { "moisture": 10 },
+        "desc": "Use of crop residue to conserve moisture.",
+        "duration": "Medium (6h)",
+        "durationTicks": 5,
+        "icon": "🍂"
+    },
+    "harvest": {
+        "name": "Harvest & Thresh",
+        "cost": { "Terai": 100, "Hilly": 110, "Himalayan": 130 },
+        "effect": {},
+        "desc": "Cutting, collecting, and threshing.",
+        "duration": "High (15h)",
+        "durationTicks": 13,
+        "icon": "🌾"
+    },
+};
+
+const BACKEND_CROPS = {
+    "Rice": {
+        harvest_gold: 220,
+        ideal: { moisture: 80, temperature: 24, n: 80, p: 48, k: 40, humidity: 82, ph: 6, rainfall: 236 },
+    },
+    "Maize": {
+        harvest_gold: 190,
+        ideal: { moisture: 55, temperature: 22, n: 78, p: 48, k: 20, humidity: 65, ph: 6, rainfall: 85 },
+    },
+    "Banana": {
+        harvest_gold: 320,
+        ideal: { moisture: 70, temperature: 27, n: 100, p: 82, k: 50, humidity: 80, ph: 6, rainfall: 105 },
+    },
+    "Mango": {
+        harvest_gold: 340,
+        ideal: { moisture: 60, temperature: 31, n: 20, p: 27, k: 30, humidity: 50, ph: 6, rainfall: 95 },
+    },
+    "Apple": {
+        harvest_gold: 360,
+        ideal: { moisture: 50, temperature: 23, n: 21, p: 134, k: 200, humidity: 92, ph: 6, rainfall: 113 },
+    },
+    "Jute": {
+        harvest_gold: 230,
+        ideal: { moisture: 65, temperature: 25, n: 78, p: 47, k: 40, humidity: 80, ph: 7, rainfall: 175 },
+    },
+    "Papaya": {
+        harvest_gold: 310,
+        ideal: { moisture: 65, temperature: 34, n: 50, p: 59, k: 50, humidity: 92, ph: 7, rainfall: 143 },
+    },
+    "Lentil": {
+        harvest_gold: 200,
+        ideal: { moisture: 45, temperature: 25, n: 19, p: 68, k: 19, humidity: 65, ph: 7, rainfall: 46 },
+    },
+    "Orange": {
+        harvest_gold: 330,
+        ideal: { moisture: 55, temperature: 23, n: 20, p: 17, k: 10, humidity: 92, ph: 7, rainfall: 110 },
+    },
+    "Cotton": {
+        harvest_gold: 240,
+        ideal: { moisture: 55, temperature: 24, n: 118, p: 46, k: 20, humidity: 80, ph: 7, rainfall: 80 },
+    },
+};
+
 const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
 const uid = () => (globalThis.crypto?.randomUUID ? globalThis.crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`);
 const stageFrom = (p) => (p < 35 ? STAGE.SEED : p < 75 ? STAGE.SPROUT : STAGE.MATURE);
-const DAY_TICKS = 101;
+const DAY_TICKS = 20; // Reduced from 101 for faster simulation (each day = 20 ticks)
 
 function detectBiome(raw) {
     const q = String(raw || '').toLowerCase();
@@ -209,10 +345,51 @@ export default function Home() {
     const [rainHint, setRainHint] = React.useState(false);
 
     const [grid, setGrid] = React.useState(() => Array.from({ length: 16 }, () => null));
+    const [soilState, setSoilState] = React.useState(() => Array.from({ length: 16 }, () => ({ ploughed: false })));
     const gridRef = React.useRef(grid);
+    const soilStateRef = React.useRef(soilState);
+
     React.useEffect(() => {
         gridRef.current = grid;
     }, [grid]);
+    React.useEffect(() => {
+        soilStateRef.current = soilState;
+    }, [soilState]);
+
+    // Helpers for soil suitability
+    const getSoilParams = React.useCallback(() => {
+        const defaults = defaultsFor(biome);
+        return {
+            n: 40 + (rain / 10),
+            p: 40,
+            k: 40,
+            temperature: temp,
+            humidity: defaults.sun, // Using sun as proxy for humidity matches fetchRecommendations
+            ph: 6.5,
+            rainfall: rain * 2.5
+        };
+    }, [biome, rain, temp]);
+
+    const getSuitabilityScore = React.useCallback((species) => {
+        const cropDef = BACKEND_CROPS[species];
+        if (!cropDef || !cropDef.ideal) return 100; // Default safe if no data
+
+        const currentParams = getSoilParams();
+        const ideal = cropDef.ideal;
+        const vecCurrent = [currentParams.n, currentParams.p, currentParams.k, currentParams.temperature, currentParams.humidity, currentParams.ph, currentParams.rainfall];
+        const vecIdeal = [ideal.n, ideal.p, ideal.k, ideal.temperature, ideal.humidity, ideal.ph, ideal.rainfall];
+
+        let sumSq = 0;
+        for (let i = 0; i < vecCurrent.length; i++) {
+            sumSq += Math.pow(vecCurrent[i] - vecIdeal[i], 2);
+        }
+        const dist = Math.sqrt(sumSq);
+
+        // Model formula: score = alpha / distance * goldunit. (Alpha=100, Unit=10 -> 1000/dist)
+        if (dist === 0) return 999;
+        // Relaxed scoring: (300 / dist) * 10 to allow growth in default conditions despite unit variances
+        return (300 / dist) * 10;
+    }, [getSoilParams]);
     const speedIdxRef = React.useRef(speedIdx);
     React.useEffect(() => {
         speedIdxRef.current = speedIdx;
@@ -270,6 +447,112 @@ export default function Home() {
     const [nurseryOpen, setNurseryOpen] = React.useState(false);
     const nurseryRef = React.useRef(null);
 
+    // Grid selection state
+    // Refactored to allow toggle logic intersection
+    const [selectedRows, setSelectedRows] = React.useState(new Set());
+    const [selectedCols, setSelectedCols] = React.useState(new Set());
+    const [selectedCells, setSelectedCells] = React.useState(new Set());
+
+    // Crop recommendations from ML model
+    const [recommendations, setRecommendations] = React.useState([]);
+    const [recsLoading, setRecsLoading] = React.useState(false);
+
+    // Blocking Action State
+    const [actionBusy, setActionBusy] = React.useState(null); // { name, progress, total }
+
+    const selection = React.useMemo(() => {
+        const next = new Set(selectedCells);
+        for (const r of selectedRows) {
+            for (let c = 0; c < 4; c++) next.add(r * 4 + c);
+        }
+        for (const c of selectedCols) {
+            for (let r = 0; r < 4; r++) next.add(r * 4 + c);
+        }
+        return next;
+    }, [selectedRows, selectedCols, selectedCells]);
+
+    // Grid selection functions
+    const toggleCellSelection = React.useCallback((idx) => {
+        setSelectedCells(prev => {
+            const next = new Set(prev);
+            if (next.has(idx)) next.delete(idx);
+            else next.add(idx);
+            return next;
+        });
+    }, []);
+
+    const selectRow = React.useCallback((rowIndex) => {
+        setSelectedRows(prev => {
+            const next = new Set(prev);
+            if (next.has(rowIndex)) next.delete(rowIndex);
+            else next.add(rowIndex);
+            return next;
+        });
+    }, []);
+
+    const selectCol = React.useCallback((colIndex) => {
+        setSelectedCols(prev => {
+            const next = new Set(prev);
+            if (next.has(colIndex)) next.delete(colIndex);
+            else next.add(colIndex);
+            return next;
+        });
+    }, []);
+
+    const selectAll = React.useCallback(() => {
+        setSelectedRows(new Set([0, 1, 2, 3]));
+        setSelectedCols(new Set());
+        setSelectedCells(new Set());
+    }, []);
+
+    const clearSelection = React.useCallback(() => {
+        setSelectedRows(new Set());
+        setSelectedCols(new Set());
+        setSelectedCells(new Set());
+    }, []);
+
+    // Fetch crop recommendations from backend
+    const fetchRecommendations = React.useCallback(async () => {
+        setRecsLoading(true);
+        try {
+            // Build average soil params from environment
+            const defaults = defaultsFor(biome);
+            const reqBody = {
+                n: 40 + (rain / 10),
+                p: 40,
+                k: 40,
+                temperature: temp,
+                humidity: defaults.sun,
+                ph: 6.5,
+                rainfall: rain * 2.5
+            };
+            const res = await fetch(`${API_URL}/recommend`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(reqBody)
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setRecommendations(data.recommendations || []);
+            }
+        } catch (e) {
+            console.log('Recommendations fetch failed:', e);
+            // Fallback to mock recommendations
+            setRecommendations([
+                { crop: 'Rice', score: 85 },
+                { crop: 'Maize', score: 72 },
+                { crop: 'Banana', score: 65 }
+            ]);
+        } finally {
+            setRecsLoading(false);
+        }
+    }, [biome, temp, rain]);
+
+    // Fetch recommendations on mount and when environment changes
+    React.useEffect(() => {
+        fetchRecommendations();
+    }, [biome, temp]);
+
     const clockInfo = React.useMemo(() => {
         const mins = Math.round((clamp(tod, 0, 100) / 100) * 24 * 60);
         const hh24 = Math.floor(mins / 60) % 24;
@@ -304,9 +587,9 @@ export default function Home() {
     ].join(',');
 
     const SPEEDS = React.useMemo(() => [
-        { label: 'Slow', tickMs: 400 },
-        { label: 'Medium', tickMs: 200 },
-        { label: 'Fast', tickMs: 100 },
+        { label: 'Slow', tickMs: 500 },    // Relaxed pace - visible progress
+        { label: 'Medium', tickMs: 200 },   // Balanced - good for normal play
+        { label: 'Fast', tickMs: 80 },      // Quick results - still smooth
     ], []);
     const tickMs = SPEEDS[clamp(speedIdx, 0, 2)]?.tickMs ?? 200;
     const speedLabel = SPEEDS[clamp(speedIdx, 0, 2)]?.label ?? 'Medium';
@@ -559,184 +842,182 @@ export default function Home() {
         return 'Stable field conditions — maintain regular watering and monitor plant health.';
     }, [biome, temp]);
 
-    React.useEffect(() => {
-        if (!running) return;
-        const interval = setInterval(() => {
-            // Simulation continues even with care prompts - no longer pausing
+    const advanceSimulationStep = React.useCallback(() => {
+        // Simulation continues even with care prompts - no longer pausing
 
-            const { sun: s, rain: r, biome: b, temp: tt, wx: wxx } = envRef.current;
-            const drought = s > 80 && r < 20;
+        const { sun: s, rain: r, biome: b, temp: tt, wx: wxx } = envRef.current;
+        const drought = s > 80 && r < 20;
 
-            const humidity = Number(wxx?.humidity);
-            const humidPct = Number.isFinite(humidity) ? clamp(humidity, 0, 100) : clamp(Math.round(r + (r >= 55 ? 18 : 0)), 0, 100);
-            const humid = humidPct >= 70;
+        const humidity = Number(wxx?.humidity);
+        const humidPct = Number.isFinite(humidity) ? clamp(humidity, 0, 100) : clamp(Math.round(r + (r >= 55 ? 18 : 0)), 0, 100);
+        const humid = humidPct >= 70;
 
-            const globalTick = dayRef.current * DAY_TICKS + todRef.current;
+        const globalTick = dayRef.current * DAY_TICKS + todRef.current;
 
-            // Check for care needs and mark plants (but don't pause simulation)
-            let newCareNeeded = null;
-            for (let plantIndex = 0; plantIndex < gridRef.current.length; plantIndex += 1) {
-                const p = gridRef.current[plantIndex];
-                if (!p || p.isDead) continue;
-                // Skip if already has a pending action
-                if (String(p.requiredAction || '')) continue;
+        // Check for care needs and mark plants (but don't pause simulation)
+        let newCareNeeded = null;
+        for (let plantIndex = 0; plantIndex < gridRef.current.length; plantIndex += 1) {
+            const p = gridRef.current[plantIndex];
+            if (!p || p.isDead) continue;
+            // Skip if already has a pending action
+            if (String(p.requiredAction || '')) continue;
+
+            const profile = cropProfileFor(p.species);
+            const lastCareTick = p.lastCareTick || {};
+
+            const gp = Number.isFinite(p.growthProgress) ? p.growthProgress : 0;
+            const waterEvery = drought ? profile.waterEveryDrought : profile.waterEvery;
+            const lastWater = Number.isFinite(lastCareTick.water) ? lastCareTick.water : globalTick;
+            if (r < 70 && globalTick - lastWater >= waterEvery) {
+                newCareNeeded = { plantIndex, action: ACTION.WATER };
+                break;
+            }
+
+            const insectEvery = Math.round(profile.insecticideEveryDays * DAY_TICKS * (humid ? 0.85 : 1));
+            const lastInsect = Number.isFinite(lastCareTick.insecticide) ? lastCareTick.insecticide : globalTick;
+            if (gp >= 35 && globalTick - lastInsect >= insectEvery) {
+                newCareNeeded = { plantIndex, action: ACTION.INSECTICIDE };
+                break;
+            }
+
+            const pestEvery = Math.round(profile.pesticideEveryDays * DAY_TICKS * (humid ? 0.85 : 1));
+            const lastPest = Number.isFinite(lastCareTick.pesticide) ? lastCareTick.pesticide : globalTick;
+            if (gp >= 65 && globalTick - lastPest >= pestEvery) {
+                newCareNeeded = { plantIndex, action: ACTION.PESTICIDE };
+                break;
+            }
+        }
+
+        // If new care is needed and no current prompt, pause simulation for 20 seconds
+        if (newCareNeeded && !carePromptRef.current) {
+            const expiresAtMs = Date.now() + 20000; // 20 second timer
+            setGrid((prev) =>
+                prev.map((p, idx) => {
+                    if (idx !== newCareNeeded.plantIndex) return p;
+                    if (!p || p.isDead) return p;
+                    return { ...p, requiredAction: newCareNeeded.action, careDueAtMs: expiresAtMs };
+                }),
+            );
+            setCarePrompt({ ...newCareNeeded, dueAtMs: expiresAtMs, resumeRunning: false });
+            setToast(`⚠️ Care needed: ${newCareNeeded.action}! Crops continue growing but with penalties.`);
+            setSliderValue(-1);
+            // DON'T pause simulation - let plants grow with penalty
+            // setRunning(false);
+        }
+
+        let rolled = false;
+        let deaths = 0;
+        let pendingAny = false;
+        let matureAll = true;
+        let aliveAny = false;
+
+        setTod((prev) => {
+            const next = prev + 1;
+
+            if (next > 100) {
+                rolled = true;
+                setDay((d) => d + 1);
+                return 0;
+            }
+            return next;
+        });
+
+        if (rolled) {
+            setToast(dailyAdvice());
+        }
+
+        setGrid((prev) => {
+            const { sun: s2, rain: r2, biome: b2, temp: tt2 } = envRef.current;
+            const drought2 = s2 > 80 && r2 < 20;
+            const drowning2 = r2 > 80;
+
+            return prev.map((p) => {
+                if (!p) return null;
+                if (p.isDead) return p;
+
+                let deathCharged = Boolean(p.deathCharged);
+                let health = p.health;
+
+                // Plants with pending care continue growing but with penalties
+                const hasPendingCare = String(p.requiredAction || '');
+                let careNeglectPenalty = 1; // growth rate multiplier
+                let careHealthDamage = 0; // per-tick health loss
+                if (hasPendingCare) {
+                    pendingAny = true;
+                    careNeglectPenalty = 0.3; // 70% slower growth when neglected
+                    careHealthDamage = 0.5; // lose health per tick when care is neglected
+                }
 
                 const profile = cropProfileFor(p.species);
-                const lastCareTick = p.lastCareTick || {};
+                const baseGrowthDays = Number.isFinite(p.growthDays)
+                    ? p.growthDays
+                    : Number.isFinite(p.growthProgress)
+                        ? (p.growthProgress / 100) * profile.daysToMature
+                        : 0;
 
-                const gp = Number.isFinite(p.growthProgress) ? p.growthProgress : 0;
-                const waterEvery = drought ? profile.waterEveryDrought : profile.waterEvery;
-                const lastWater = Number.isFinite(lastCareTick.water) ? lastCareTick.water : globalTick;
-                if (r < 70 && globalTick - lastWater >= waterEvery) {
-                    newCareNeeded = { plantIndex, action: ACTION.WATER };
-                    break;
+                let growthDays = baseGrowthDays;
+                const deltaDays = 1 / DAY_TICKS;
+                // Speed multiplier: Fast=30x, Medium=15x, Slow=5x (much faster growth)
+                const speedMultiplier = speedIdxRef.current === 2 ? 30 : speedIdxRef.current === 1 ? 15 : 5;
+                let rate = 1.5 * speedMultiplier * careNeglectPenalty; // Base rate 1.5x
+                if (p.preferredBiome === b2) rate *= 1.3;
+                if (tt2 <= 8) rate *= 0.8;
+                const healthFactor = 0.7 + (health / 100) * 0.3; // Min 70% growth even at low health
+                growthDays = clamp(growthDays + deltaDays * rate * healthFactor, 0, profile.daysToMature);
+                const gp = clamp((growthDays / profile.daysToMature) * 100, 0, 100);
+
+                // Apply care neglect damage
+                health -= careHealthDamage;
+                // Apply environmental effects
+                if (drought2) health -= 0.45;
+                else if (drowning2) health -= 0.35;
+                else health += 0.12;
+                health = clamp(health, 0, 100);
+                const isDead = health <= 0;
+
+                if (isDead && !deathCharged) {
+                    deaths += 1;
+                    deathCharged = true;
                 }
 
-                const insectEvery = Math.round(profile.insecticideEveryDays * DAY_TICKS * (humid ? 0.85 : 1));
-                const lastInsect = Number.isFinite(lastCareTick.insecticide) ? lastCareTick.insecticide : globalTick;
-                if (gp >= 35 && globalTick - lastInsect >= insectEvery) {
-                    newCareNeeded = { plantIndex, action: ACTION.INSECTICIDE };
-                    break;
+                const stage = stageFrom(gp);
+                if (!isDead) {
+                    aliveAny = true;
+                    if (stage !== STAGE.MATURE) matureAll = false;
                 }
 
-                const pestEvery = Math.round(profile.pesticideEveryDays * DAY_TICKS * (humid ? 0.85 : 1));
-                const lastPest = Number.isFinite(lastCareTick.pesticide) ? lastCareTick.pesticide : globalTick;
-                if (gp >= 65 && globalTick - lastPest >= pestEvery) {
-                    newCareNeeded = { plantIndex, action: ACTION.PESTICIDE };
-                    break;
-                }
-            }
-
-            // If new care is needed and no current prompt, pause simulation for 20 seconds
-            if (newCareNeeded && !carePromptRef.current) {
-                const expiresAtMs = Date.now() + 20000; // 20 second timer
-                setGrid((prev) =>
-                    prev.map((p, idx) => {
-                        if (idx !== newCareNeeded.plantIndex) return p;
-                        if (!p || p.isDead) return p;
-                        return { ...p, requiredAction: newCareNeeded.action, careDueAtMs: expiresAtMs };
-                    }),
-                );
-                setCarePrompt({ ...newCareNeeded, dueAtMs: expiresAtMs, resumeRunning: true });
-                setToast(`🛑 Care needed: ${newCareNeeded.action}! You have 20 seconds to respond.`);
-                setSliderValue(-1);
-                // PAUSE simulation for 20 seconds to give user time
-                setRunning(false);
-                return; // Exit early - simulation paused
-            }
-
-            let rolled = false;
-            let deaths = 0;
-            let pendingAny = false;
-            let matureAll = true;
-            let aliveAny = false;
-
-            setTod((prev) => {
-                const next = prev + 1;
-
-                if (next > 100) {
-                    rolled = true;
-                    setDay((d) => d + 1);
-                    return 0;
-                }
-                return next;
+                return {
+                    ...p,
+                    health,
+                    isDead,
+                    growthDays,
+                    growthProgress: gp,
+                    growthStage: stage,
+                    // Keep pending care action, only clear if no pending care
+                    requiredAction: hasPendingCare ? p.requiredAction : '',
+                    careDueAtMs: hasPendingCare ? p.careDueAtMs : 0,
+                    deathCharged,
+                };
             });
+        });
 
-            if (rolled) {
-                setToast(dailyAdvice());
-            }
+        if (deaths > 0) {
+            setCoins((c) => c - deaths * 5);
+            setToast(`Crops died (-${deaths * 5} coins).`);
+        }
 
-            setGrid((prev) => {
-                const { sun: s2, rain: r2, biome: b2, temp: tt2 } = envRef.current;
-                const drought2 = s2 > 80 && r2 < 20;
-                const drowning2 = r2 > 80;
+        if (!pendingAny && aliveAny && matureAll && !matureStopRef.current) {
+            matureStopRef.current = true;
+            setRunning(false);
+            setToast('All crops are fully grown — harvest now to earn coins.');
+        }
+    }, [dailyAdvice]);
 
-                return prev.map((p) => {
-                    if (!p) return null;
-                    if (p.isDead) return p;
-
-                    let deathCharged = Boolean(p.deathCharged);
-                    let health = p.health;
-
-                    // Plants with pending care continue growing but with penalties
-                    const hasPendingCare = String(p.requiredAction || '');
-                    let careNeglectPenalty = 1; // growth rate multiplier
-                    let careHealthDamage = 0; // per-tick health loss
-                    if (hasPendingCare) {
-                        pendingAny = true;
-                        careNeglectPenalty = 0.3; // 70% slower growth when neglected
-                        careHealthDamage = 0.5; // lose health per tick when care is neglected
-                    }
-
-                    const profile = cropProfileFor(p.species);
-                    const baseGrowthDays = Number.isFinite(p.growthDays)
-                        ? p.growthDays
-                        : Number.isFinite(p.growthProgress)
-                            ? (p.growthProgress / 100) * profile.daysToMature
-                            : 0;
-
-                    let growthDays = baseGrowthDays;
-                    const deltaDays = 1 / DAY_TICKS;
-                    // Speed multiplier: Fast=10x, Medium=5x, Slow=2x (much faster growth)
-                    const speedMultiplier = speedIdxRef.current === 2 ? 10 : speedIdxRef.current === 1 ? 5 : 2;
-                    let rate = 1 * speedMultiplier * careNeglectPenalty;
-                    if (p.preferredBiome === b2) rate *= 1.5;
-                    if (tt2 <= 8) rate *= 0.6;
-                    const healthFactor = 0.5 + (health / 100) * 0.5;
-                    growthDays = clamp(growthDays + deltaDays * rate * healthFactor, 0, profile.daysToMature);
-                    const gp = clamp((growthDays / profile.daysToMature) * 100, 0, 100);
-
-                    // Apply care neglect damage
-                    health -= careHealthDamage;
-                    // Apply environmental effects
-                    if (drought2) health -= 0.45;
-                    else if (drowning2) health -= 0.35;
-                    else health += 0.12;
-                    health = clamp(health, 0, 100);
-                    const isDead = health <= 0;
-
-                    if (isDead && !deathCharged) {
-                        deaths += 1;
-                        deathCharged = true;
-                    }
-
-                    const stage = stageFrom(gp);
-                    if (!isDead) {
-                        aliveAny = true;
-                        if (stage !== STAGE.MATURE) matureAll = false;
-                    }
-
-                    return {
-                        ...p,
-                        health,
-                        isDead,
-                        growthDays,
-                        growthProgress: gp,
-                        growthStage: stage,
-                        // Keep pending care action, only clear if no pending care
-                        requiredAction: hasPendingCare ? p.requiredAction : '',
-                        careDueAtMs: hasPendingCare ? p.careDueAtMs : 0,
-                        deathCharged,
-                    };
-                });
-            });
-
-            if (deaths > 0) {
-                setCoins((c) => c - deaths * 5);
-                setToast(`Crops died (-${deaths * 5} coins).`);
-            }
-
-
-
-            if (!pendingAny && aliveAny && matureAll && !matureStopRef.current) {
-                matureStopRef.current = true;
-                setRunning(false);
-                setToast('All crops are fully grown — harvest now to earn coins.');
-            }
-        }, tickMs);
-
+    React.useEffect(() => {
+        if (!running || actionBusy) return;
+        const interval = setInterval(advanceSimulationStep, tickMs);
         return () => clearInterval(interval);
-    }, [dailyAdvice, running, tickMs]);
+    }, [running, actionBusy, tickMs, advanceSimulationStep]);
 
     React.useEffect(() => {
         if (!running) return;
@@ -836,6 +1117,15 @@ export default function Home() {
             coinsRef.current = coinsRef.current - 2;
             setCoins(coinsRef.current);
 
+            // Check soil conditions
+            const suitabilityScore = getSuitabilityScore(species);
+            const isSuitable = suitabilityScore >= 15;
+            const isPloughed = soilStateRef.current[idxCell]?.ploughed;
+            let dead = false;
+            // Immediate death logic
+            // Immediate death logic
+            if (!isSuitable) dead = true;
+
             const globalTick = dayRef.current * DAY_TICKS + todRef.current;
             setGrid((prev) => {
                 const next = [...prev];
@@ -846,147 +1136,299 @@ export default function Home() {
                     growthStage: STAGE.SEED,
                     growthDays: 0,
                     growthProgress: 0,
-                    health: meta.pref === biome ? 82 : 74,
-                    isDead: false,
+                    health: dead ? 0 : (meta.pref === biome ? 82 : 74),
+                    isDead: dead,
                     preferredBiome: meta.pref,
                     emoji: meta.emoji,
                     requiredAction: '',
                     careDueAtMs: 0,
                     lastCareTick: { water: globalTick, insecticide: globalTick, pesticide: globalTick },
                     deathCharged: false,
-                    stressStrikes: 0,
+                    stressStrikes: 0, // Reset strikes
                 };
                 return next;
             });
-            setToast(`${meta.emoji} ${meta.species} planted (-2 coins).`);
+
+            // Consume plough state if successful
+            if (!dead && isPloughed) {
+                setSoilState(prev => {
+                    const next = [...prev];
+                    if (next[idxCell]) next[idxCell] = { ...next[idxCell], ploughed: false };
+                    return next;
+                });
+            }
+
+            if (dead) {
+                if (!isSuitable) setToast(`⚠️ Poor conditions. Seed died immediately. (-2g)`);
+            } else {
+                setToast(`${meta.emoji} ${meta.species} planted (-2 coins).`);
+            }
         },
-        [biome],
+        [biome, getSuitabilityScore],
     );
 
-    const waterAll = React.useCallback(() => {
-        rainManualRef.current = true;
-        setRain((r) => clamp(r + 20, 0, 100));
+    // Plant a crop in all selected cells
+    const plantInSelection = React.useCallback(
+        (species) => {
+            const meta = NURSERY.find((n) => n.species === species);
+            if (!meta) return;
+
+            // If no cells are selected, show a message
+            if (selection.size === 0) {
+                setToast('⚠️ Select cells first, then click a crop to plant!');
+                return;
+            }
+
+            // Count how many empty cells are selected
+            const currentGrid = gridRef.current;
+            let emptyCount = 0;
+            for (const idx of selection) {
+                if (!currentGrid[idx]) emptyCount += 1;
+            }
+
+            if (emptyCount === 0) {
+                setToast('❌ All selected cells are already occupied.');
+                return;
+            }
+
+            const costPerPlant = 2;
+            const totalCost = emptyCount * costPerPlant;
+
+            if (coinsRef.current < totalCost) {
+                setToast(`❌ Not enough coins! Need ${totalCost}g for ${emptyCount} seeds, have ${coinsRef.current}g`);
+                return;
+            }
+
+            matureStopRef.current = false;
+            const globalTick = dayRef.current * DAY_TICKS + todRef.current;
+
+            // Check suitability
+            const suitabilityScore = getSuitabilityScore(species);
+            const isSuitable = suitabilityScore >= 15;
+            const currentSoil = soilStateRef.current;
+
+            let planted = 0;
+            let died = 0;
+
+            setGrid((prev) => {
+                const next = [...prev];
+                for (const idx of selection) {
+                    if (next[idx]) continue; // Skip occupied cells
+
+                    const isPloughed = currentSoil[idx].ploughed;
+                    let dead = false;
+                    if (!isSuitable) dead = true;
+
+                    if (dead) died++;
+                    else planted++;
+
+                    next[idx] = {
+                        id: uid(),
+                        species: meta.species,
+                        growthStage: STAGE.SEED,
+                        growthDays: 0,
+                        growthProgress: 0,
+                        health: dead ? 0 : (meta.pref === biome ? 82 : 74),
+                        isDead: dead,
+                        preferredBiome: meta.pref,
+                        emoji: meta.emoji,
+                        requiredAction: '',
+                        careDueAtMs: 0,
+                        lastCareTick: { water: globalTick, insecticide: globalTick, pesticide: globalTick },
+                        deathCharged: false, // Will be charged next tick if dead? Or effectively dead now.
+                        stressStrikes: 0,
+                    };
+                }
+                return next;
+            });
+
+            // Consume plough state for used cells
+            setSoilState(prev => prev.map((s, i) => selection.has(i) && !gridRef.current[i] ? { ...s, ploughed: false } : s));
+
+            // Deduct coins for all planted (even dead ones cost money)
+            const actualCost = (planted + died) * costPerPlant;
+            coinsRef.current = coinsRef.current - actualCost;
+            setCoins(coinsRef.current);
+
+            if (died > 0) {
+                if (!isSuitable) setToast(`⚠️ Poor conditions (Score ${Math.round(suitabilityScore)}). ${died} crops died immediately. (-${actualCost}g)`);
+            } else {
+                setToast(`${meta.emoji} Planted ${planted} ${meta.species} seeds (-${actualCost}g). Score: ${Math.round(suitabilityScore)}`);
+            }
+        },
+        [biome, selection, getSuitabilityScore],
+    );
+
+    const handleBackendAction = React.useCallback(async (actionKey) => {
+        const actionDef = BACKEND_ACTIONS[actionKey];
+        if (!actionDef) return;
+        if (actionBusy) return;
+
+        // Check if any cells are selected
+        if (selection.size === 0) {
+            setToast('⚠️ Select cells first! use row/column buttons or click cells.');
+            return;
+        }
+
+        // Calculate operational cost
+        const costPerCell = actionDef.cost[biome] || 0;
+        const totalOperationalCost = selection.size * costPerCell;
+
+        // Check coins
+        if (coinsRef.current < totalOperationalCost) {
+            setToast(`❌ Not enough coins! Need ${totalOperationalCost}g, have ${coinsRef.current}g`);
+            return;
+        }
+
+        // START BLOCKING ACTION
+        const duration = actionDef.durationTicks || 5;
+        setActionBusy({ name: actionDef.name, icon: actionDef.icon, progress: 0, total: duration });
+
+        // Run simulation loop (Time Skip)
+        for (let i = 0; i < duration; i++) {
+            advanceSimulationStep();
+            // Wait for tick animation
+            await new Promise((resolve) => setTimeout(resolve, 100));
+            setActionBusy((prev) => (prev ? { ...prev, progress: i + 1 } : null));
+        }
+
         const globalTick = dayRef.current * DAY_TICKS + todRef.current;
-        setGrid((prev) =>
-            prev.map((p) => {
-                if (!p || p.isDead) return p;
+
+        // Track results (CALCULATE SYNC TO AVOID RACE CONDITIONS)
+        const result = {
+            affected: 0,
+            harvestCount: 0,
+            harvestEarnings: 0,
+            harvestDetails: new Map(),
+            harvestedIndices: [],
+        };
+
+        // Special side-effects for specific actions
+        if (actionKey === 'irrigate') {
+            rainManualRef.current = true;
+            setRain((r) => clamp(r + 20, 0, 100));
+        }
+
+        // PRE-CALCULATE UPDATES
+        const currentGrid = gridRef.current;
+        const nextGrid = [...currentGrid];
+
+        for (const idx of selection) {
+            const p = nextGrid[idx];
+
+            // If cell is empty (p is null)
+            if (!p) {
+                if (!['harvest', 'irrigate'].includes(actionKey)) {
+                    result.affected++;
+                }
+                continue;
+            }
+
+            if (p.isDead) continue;
+
+            // --- Harvesting ---
+            if (actionKey === 'harvest') {
+                const gp = Number.isFinite(p.growthProgress) ? p.growthProgress : 0;
+                if (gp >= 75) {
+                    result.harvestCount++;
+                    result.harvestedIndices.push(idx);
+
+                    // Calculate earnings with backend data
+                    const cropDef = BACKEND_CROPS[p.species];
+                    const yieldGold = cropDef ? cropDef.harvest_gold : 50;
+                    result.harvestEarnings += yieldGold;
+
+                    const cur = result.harvestDetails.get(p.species) || { emoji: p.emoji, count: 0 };
+                    cur.count++;
+                    result.harvestDetails.set(p.species, cur);
+
+                    nextGrid[idx] = null; // Remove crop in next state
+                }
+                continue;
+            }
+
+            // --- Irrigation (Watering) ---
+            if (actionKey === 'irrigate') {
+                result.affected++;
                 const clears = String(p.requiredAction || '') === ACTION.WATER;
-                return {
+                nextGrid[idx] = {
                     ...p,
                     health: clamp(p.health + 10, 0, 100),
                     requiredAction: clears ? '' : p.requiredAction,
                     careDueAtMs: clears ? 0 : p.careDueAtMs,
                     lastCareTick: { ...(p.lastCareTick || {}), water: globalTick },
                 };
-            }),
-        );
-        setToast('Water All: moisture increased.');
-        const cp = carePromptRef.current;
-        if (cp?.action === ACTION.WATER) {
-            setCarePrompt(null);
-            setSliderValue(-1);
-            if (cp?.resumeRunning) setRunning(true);
-        }
-    }, []);
+                continue;
+            }
 
-    const insecticideAll = React.useCallback(() => {
-        const globalTick = dayRef.current * DAY_TICKS + todRef.current;
-        setGrid((prev) =>
-            prev.map((p) => {
-                if (!p || p.isDead) return p;
-                const clears = String(p.requiredAction || '') === ACTION.INSECTICIDE;
-                return {
-                    ...p,
-                    requiredAction: clears ? '' : p.requiredAction,
-                    careDueAtMs: clears ? 0 : p.careDueAtMs,
-                    lastCareTick: { ...(p.lastCareTick || {}), insecticide: globalTick },
-                };
-            }),
-        );
-        setToast('Insecticide applied: pest risk reduced.');
-        const cp = carePromptRef.current;
-        if (cp?.action === ACTION.INSECTICIDE) {
-            setCarePrompt(null);
-            setSliderValue(-1);
-            if (cp?.resumeRunning) setRunning(true);
+            // --- Other Actions ---
+            result.affected++;
         }
-    }, []);
 
-    const pesticideAll = React.useCallback(() => {
-        const globalTick = dayRef.current * DAY_TICKS + todRef.current;
-        setGrid((prev) =>
-            prev.map((p) => {
-                if (!p || p.isDead) return p;
-                const clears = String(p.requiredAction || '') === ACTION.PESTICIDE;
-                return {
-                    ...p,
-                    requiredAction: clears ? '' : p.requiredAction,
-                    careDueAtMs: clears ? 0 : p.careDueAtMs,
-                    lastCareTick: { ...(p.lastCareTick || {}), pesticide: globalTick },
-                };
-            }),
-        );
-        setToast('Pesticide applied: fungus risk reduced.');
-        const cp = carePromptRef.current;
-        if (cp?.action === ACTION.PESTICIDE) {
-            setCarePrompt(null);
-            setSliderValue(-1);
-            if (cp?.resumeRunning) setRunning(true);
+        // Apply grid changes
+        setGrid(nextGrid);
+
+        // --- Ploughing State Update ---
+        if (['plough', 'manual_plough'].includes(actionKey)) {
+            setSoilState(prev => prev.map((s, i) => {
+                if (selection.has(i)) return { ...s, ploughed: true };
+                return s;
+            }));
+            result.affected = selection.size;
         }
-    }, []);
 
-    const harvestAll = React.useCallback(() => {
-        let harvested = 0;
-        const by = new Map();
-        const harvestedCells = [];
-        setGrid((prev) =>
-            prev.map((p, idx) => {
-                if (!p) return null;
-                if (p.isDead) return p;
-                if (p.growthStage === STAGE.MATURE) {
-                    harvested += 1;
-                    harvestedCells.push(idx);
-                    const k = p.species;
-                    const cur = by.get(k) || { species: p.species, emoji: p.emoji, count: 0 };
-                    cur.count += 1;
-                    by.set(k, cur);
-                    return null;
-                }
-                return p;
-            }),
-        );
-        if (!harvested) {
-            setToast('No mature crops ready.');
-            return;
-        }
-        setCoins((c) => c + harvested * 5);
-        const parts = Array.from(by.values()).map((x) => `${x.emoji} ${x.species} ×${x.count}`);
-        setToast(`Harvested ${harvested} (+${harvested * 5} coins): ${parts.join(' · ')}`);
+        // Post-update logic (Coins, Toast, Bursts)
+        if (actionKey === 'harvest') {
+            if (result.harvestCount === 0) {
+                setToast('🌱 No mature crops to harvest in selected cells.');
+                setActionBusy(null);
+                return;
+            }
 
-        const box = coinBoxRef.current?.getBoundingClientRect?.();
-        if (box) {
-            const toX = box.left + box.width / 2;
-            const toY = box.top + box.height / 2;
-            const now = Date.now();
-            const bursts = harvestedCells
-                .map((i) => {
+            const finalCost = totalOperationalCost;
+            const netChange = result.harvestEarnings - finalCost;
+
+            coinsRef.current = coinsRef.current + netChange;
+            setCoins(coinsRef.current);
+
+            const parts = Array.from(result.harvestDetails.entries()).map(([k, v]) => `${v.emoji} ${k} ×${v.count}`);
+            setToast(`🌾 Harvested ${result.harvestCount} crops (+${result.harvestEarnings}g - ${finalCost}g cost): ${parts.join(' · ')}`);
+
+            // Bursts
+            const box = coinBoxRef.current?.getBoundingClientRect?.();
+            if (box) {
+                const toX = box.left + box.width / 2;
+                const toY = box.top + box.height / 2;
+                const now = Date.now();
+                const bursts = result.harvestedIndices.map((i) => {
                     const el = cellRefs.current?.[i];
                     const r = el?.getBoundingClientRect?.();
                     if (!r) return null;
-                    return {
-                        id: uid(),
-                        fromX: r.left + r.width / 2,
-                        fromY: r.top + r.height / 2,
-                        toX,
-                        toY,
-                        phase: 0,
-                        t0: now,
-                    };
-                })
-                .filter(Boolean);
-            if (bursts.length) setCoinBursts((prev) => [...prev, ...bursts]);
+                    return { id: uid(), fromX: r.left + r.width / 2, fromY: r.top + r.height / 2, toX, toY, phase: 0, t0: now };
+                }).filter(Boolean);
+                if (bursts.length) setCoinBursts(prev => [...prev, ...bursts]);
+            }
+
+        } else {
+            coinsRef.current = coinsRef.current - totalOperationalCost;
+            setCoins(coinsRef.current);
+
+            setToast(`${actionDef.icon} ${actionDef.name} applied (-${totalOperationalCost}g)`);
+
+            // Check care prompts
+            if (actionKey === 'irrigate') {
+                const cp = carePromptRef.current;
+                if (cp?.action === ACTION.WATER) {
+                    setCarePrompt(null);
+                    setSliderValue(-1);
+                    if (cp?.resumeRunning) setRunning(true);
+                }
+            }
         }
-    }, []);
+        setActionBusy(null);
+        void fetchRecommendations(); // Auto-refresh recommendations
+
+    }, [biome, selection, advanceSimulationStep, actionBusy, fetchRecommendations]);
 
     const clearDead = React.useCallback(() => {
         let cleared = 0;
@@ -1079,9 +1521,9 @@ export default function Home() {
     }, [alive, avgHealth, biome, chatBusy, chatInput, day, rain, sun, temp, tod, total, wind]);
 
     return (
-        <div className="relative h-full w-full text-white" style={{ background: bgDay }}>
+        <div className="relative h-screen flex flex-col w-full text-white overflow-hidden" style={{ background: bgDay }}>
             <div className="pointer-events-none absolute inset-0" style={{ background: bgNight, opacity: nightBlend, transition: 'opacity 1200ms ease' }} />
-            <style>{`@keyframes j{0%{transform:translate(0,0)}25%{transform:translate(1px,-1px)}50%{transform:translate(-1px,1px)}75%{transform:translate(1px,1px)}100%{transform:translate(0,0)}} .wj{animation:j .22s infinite} .leaflet-container{background:rgba(0,0,0,.12)} .leaflet-container img{max-width:none!important} .leaflet-control-attribution{background:rgba(0,0,0,.35)!important;color:rgba(255,255,255,.75)!important} .leaflet-control-attribution a{color:rgba(255,255,255,.85)!important}`}</style>
+            <style>{`@keyframes j{0%{transform:translate(0,0)}25%{transform:translate(1px,-1px)}50%{transform:translate(-1px,1px)}75%{transform:translate(1px,1px)}100%{transform:translate(0,0)}} .wj{animation:j .22s infinite} .leaflet-container{background:rgba(0,0,0,.12)} .leaflet-container img{max-width:none!important} .leaflet-control-attribution{background:rgba(0,0,0,.35)!important;color:rgba(255,255,255,.75)!important} .leaflet-control-attribution a{color:rgba(255,255,255,.85)!important} ::-webkit-scrollbar{width:6px;height:6px} ::-webkit-scrollbar-track{background:rgba(255,255,255,0.05)} ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.2);border-radius:10px} ::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.3)} *{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.2) rgba(255,255,255,0.05)}`}</style>
             {coinBursts.map((b) => (
                 <div
                     key={b.id}
@@ -1097,14 +1539,18 @@ export default function Home() {
                     </div>
                 </div>
             ))}
-            <div className="mx-auto h-full w-full max-w-[1920px] p-3">
-                <div className="grid h-full grid-cols-[360px_1fr_360px] grid-rows-[1fr_auto] gap-4">
-                    <aside className={`flex min-h-0 flex-col gap-3 rounded-2xl p-3 ${glass}`}>
+            <div className="mx-auto flex-1 min-h-0 w-full max-w-[1920px] p-3 flex flex-col">
+                <div className="grid min-h-0 flex-1 w-full gap-4 grid-cols-1 grid-rows-[auto_1fr_auto] lg:grid-cols-[280px_1fr_280px] lg:grid-rows-1 xl:grid-cols-[360px_1fr_360px]">
+                    <aside className={`flex min-h-0 flex-col gap-3 rounded-2xl p-3 overflow-y-auto ${glass}`}>
                         <div className={`rounded-2xl p-3 ${glass}`}>
                             <div className="flex items-center gap-2 text-sm font-semibold"><Leaf className="h-5 w-5" />Field Stats</div>
                             <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
                                 <div className="rounded-xl bg-white/10 p-3 ring-1 ring-white/10"><div className="text-[11px] opacity-70">Avg health</div><div className="mt-1 text-xl font-semibold">{Math.round(avgHealth)}</div></div>
                                 <div className="rounded-xl bg-white/10 p-3 ring-1 ring-white/10"><div className="text-[11px] opacity-70">Plants</div><div className="mt-1 text-xl font-semibold">{alive}/{total}</div></div>
+                                <div className="rounded-xl bg-white/10 p-3 ring-1 ring-white/10"><div className="text-[11px] opacity-70">Temp</div><div className="mt-1 text-xl font-semibold">{Math.round(temp)}°C</div></div>
+                                <div className="rounded-xl bg-white/10 p-3 ring-1 ring-white/10"><div className="text-[11px] opacity-70">Rain</div><div className="mt-1 text-xl font-semibold">{Math.round(rain)}mm</div></div>
+                                <div className="rounded-xl bg-white/10 p-3 ring-1 ring-white/10"><div className="text-[11px] opacity-70">Wind</div><div className="mt-1 text-xl font-semibold">{Math.round(wind)}km/h</div></div>
+                                <div className="rounded-xl bg-white/10 p-3 ring-1 ring-white/10"><div className="text-[11px] opacity-70">Sun</div><div className="mt-1 text-xl font-semibold">{Math.round(sun)}%</div></div>
                             </div>
                             <div className="mt-3 rounded-xl bg-white/10 p-3 text-[12px] ring-1 ring-white/10">
                                 <div className="flex items-center justify-between"><div className="flex items-center gap-2"><MapPin className="h-4 w-4" />{biome}</div><div className="font-semibold">{temp}°C</div></div>
@@ -1154,12 +1600,24 @@ export default function Home() {
                         </div>
                     </aside>
 
-                    <main className={`relative overflow-hidden rounded-2xl p-4 ${glass}`}>
+                    <main className={`relative min-h-0 overflow-auto rounded-2xl p-4 ${glass}`}>
                         <div className="flex flex-wrap items-center justify-between gap-3">
                             <div className="flex items-center gap-2">
                                 <div className="rounded-xl bg-white/10 px-3 py-2 text-sm ring-1 ring-white/10">Day <span className="font-semibold">{day}</span> · {clock} · {tod}/100</div>
                                 <div className={`rounded-xl px-3 py-2 text-sm ring-1 ring-white/10 ${isNight ? 'bg-indigo-500/20' : 'bg-amber-400/15'}`}>{isNight ? 'Night Mode' : 'Daylight'}</div>
-                                <div className="rounded-xl bg-white/10 px-3 py-2 text-sm ring-1 ring-white/10">Speed: <span className="font-semibold">{speedLabel}</span></div>
+                                <select
+                                    value={speedIdx}
+                                    onChange={(e) => setSpeedIdx(Number(e.target.value))}
+                                    className="rounded-xl bg-white/10 px-3 py-2 text-sm ring-1 ring-white/10 outline-none hover:bg-white/15 focus:ring-emerald-400/50 cursor-pointer"
+                                >
+                                    <option value={0} className="bg-slate-900 text-white">Speed: Slow</option>
+                                    <option value={1} className="bg-slate-900 text-white">Speed: Medium</option>
+                                    <option value={2} className="bg-slate-900 text-white">Speed: Fast</option>
+                                </select>
+                                <div className="flex items-center gap-2 rounded-xl bg-amber-500/10 px-3 py-2 text-sm font-semibold text-amber-200 ring-1 ring-amber-500/20 select-none">
+                                    <div className="text-lg leading-none">💰</div>
+                                    {coins}g
+                                </div>
                             </div>
 
                             <div className="relative" ref={nurseryRef}>
@@ -1181,15 +1639,26 @@ export default function Home() {
                                                     draggable
                                                     onDragStart={(e) => e.dataTransfer.setData('text/plain', n.species)}
                                                     onClick={() => {
-                                                        setSelectedCrop(n.species);
+                                                        if (selection.size > 0) {
+                                                            // Plant in all selected cells
+                                                            plantInSelection(n.species);
+                                                        } else {
+                                                            // No selection - just select crop for cell click
+                                                            setSelectedCrop(n.species);
+                                                        }
                                                         setNurseryOpen(false);
                                                     }}
                                                     onKeyDown={(e) => {
                                                         if (e.key === 'Enter' || e.key === ' ') {
-                                                            setSelectedCrop(n.species);
+                                                            if (selection.size > 0) {
+                                                                plantInSelection(n.species);
+                                                            } else {
+                                                                setSelectedCrop(n.species);
+                                                            }
                                                             setNurseryOpen(false);
                                                         }
                                                     }}
+
                                                     className="flex cursor-pointer select-none items-center justify-between rounded-xl bg-white/10 px-3 py-2 text-sm ring-1 ring-white/10 hover:bg-white/15"
                                                     title={`Drag or select: ${n.species} (prefers ${n.pref})`}
                                                 >
@@ -1201,7 +1670,7 @@ export default function Home() {
                                                 </div>
                                             ))}
                                         </div>
-                                        <div className="mt-2 text-[11px] opacity-70">Select then click a cell, or drag into the field.</div>
+                                        <div className="mt-2 text-[11px] opacity-70">Select cells → click a crop to plant, or drag into cells.</div>
                                     </div>
                                 )}
                             </div>
@@ -1253,68 +1722,153 @@ export default function Home() {
                         <div ref={wrapRef} className="relative mt-4 rounded-2xl p-4 ring-1 ring-white/10" style={{ background: '#064e3b' }}>
                             <div className="absolute inset-0 rounded-2xl opacity-95" style={soilStyle(biome)} />
                             <canvas ref={canvasRef} className="pointer-events-none absolute inset-0 h-full w-full" />
-                            <div className="relative grid grid-cols-4 gap-3">
-                                {grid.map((p, i) => (
-                                    <div
-                                        key={i}
-                                        ref={(el) => {
-                                            cellRefs.current[i] = el;
-                                        }}
-                                        className="relative aspect-square select-none rounded-xl bg-black/20 ring-1 ring-white/10"
-                                        onClick={() => {
-                                            if (!p && selectedCrop) dropToCell(i, selectedCrop);
-                                        }}
-                                        onDragOver={(e) => e.preventDefault()}
-                                        onDrop={(e) => {
-                                            e.preventDefault();
-                                            dropToCell(i, e.dataTransfer.getData('text/plain'));
-                                        }}
+
+                            {/* Grid Selection Controls */}
+                            <div className="relative mb-3 flex flex-wrap items-center gap-2 rounded-xl bg-black/30 p-2">
+                                <div className="flex items-center gap-1 text-xs opacity-80">
+                                    <Grid3X3 className="h-4 w-4" />
+                                    <span>Select:</span>
+                                </div>
+                                {[0, 1, 2, 3].map(i => (
+                                    <button
+                                        key={`row-${i}`}
+                                        onClick={() => selectRow(i)}
+                                        className="rounded-lg bg-white/10 px-2 py-1 text-[11px] font-medium ring-1 ring-white/10 hover:bg-white/20 transition-colors"
                                     >
-                                        <div className="absolute left-2 top-2 text-[10px] opacity-70">{i + 1}</div>
-                                        {!p ? (
-                                            <div className="flex h-full items-center justify-center text-xs opacity-70">Drop</div>
-                                        ) : (
-                                            <div className="flex h-full flex-col items-center justify-center gap-1">
-                                                <div className={`${p.isDead ? 'text-stone-300 opacity-70' : 'text-white'} ${jitter(p) ? 'wj' : ''}`} style={{ transform: `scale(${scale(p)}) rotate(${p.isDead ? -14 : 0}deg)`, transition: 'transform 350ms ease, filter 400ms ease', filter: matureGlow(p) ? 'drop-shadow(0 0 10px rgba(16,185,129,.55))' : 'none' }}>
-                                                    {p.species === 'Potato' ? (
-                                                        <div className="relative h-12 w-12">
-                                                            <div className="absolute left-1/2 top-[60%] -translate-x-1/2 -translate-y-1/2 text-3xl" style={{ opacity: p.growthStage === STAGE.MATURE ? 1 : p.growthStage === STAGE.SPROUT ? 0.45 : 0.15 }}>
-                                                                🥔
+                                        Row {i + 1}
+                                    </button>
+                                ))}
+                                <span className="opacity-40">|</span>
+                                {[0, 1, 2, 3].map(i => (
+                                    <button
+                                        key={`col-${i}`}
+                                        onClick={() => selectCol(i)}
+                                        className="rounded-lg bg-white/10 px-2 py-1 text-[11px] font-medium ring-1 ring-white/10 hover:bg-white/20 transition-colors"
+                                    >
+                                        Col {i + 1}
+                                    </button>
+                                ))}
+                                <span className="opacity-40">|</span>
+                                <button
+                                    onClick={selectAll}
+                                    className="rounded-lg bg-emerald-500/25 px-2 py-1 text-[11px] font-semibold ring-1 ring-emerald-300/20 hover:bg-emerald-500/40 transition-colors"
+                                >
+                                    All
+                                </button>
+                                <button
+                                    onClick={clearSelection}
+                                    className="rounded-lg bg-rose-500/25 px-2 py-1 text-[11px] font-semibold ring-1 ring-rose-300/20 hover:bg-rose-500/40 transition-colors"
+                                >
+                                    Clear ({selection.size})
+                                </button>
+                            </div>
+
+                            <div className="relative grid grid-cols-4 gap-3">
+                                {grid.map((p, i) => {
+                                    const isPloughed = soilState[i]?.ploughed;
+                                    const isDead = p?.isDead;
+                                    const isDying = p && !isDead && (p.health < 40 || (p.stressStrikes || 0) > 0);
+
+                                    return (
+                                        <div
+                                            key={i}
+                                            ref={(el) => {
+                                                cellRefs.current[i] = el;
+                                            }}
+                                            className={`relative aspect-square select-none rounded-xl bg-black/20 ring-1 transition-all cursor-pointer 
+                                                ${selection.has(i) ? 'ring-2 ring-emerald-400 bg-emerald-500/20' :
+                                                    isDead ? 'ring-red-900/50 bg-red-950/30 grayscale' :
+                                                        isDying ? 'ring-2 ring-orange-500/50 bg-orange-500/10' :
+                                                            'ring-white/10 hover:ring-white/30'
+                                                }`}
+                                            onClick={() => {
+                                                if (!p && selectedCrop) {
+                                                    // If selecting multiple cells, try to plant in all of them
+                                                    if (selection.has(i)) {
+                                                        plantInSelection(selectedCrop);
+                                                    } else {
+                                                        dropToCell(i, selectedCrop);
+                                                    }
+                                                }
+                                                else toggleCellSelection(i);
+                                            }}
+                                            onDragOver={(e) => e.preventDefault()}
+                                            onDrop={(e) => {
+                                                e.preventDefault();
+                                                dropToCell(i, e.dataTransfer.getData('text/plain'));
+                                            }}
+                                        >
+                                            <div className="absolute left-2 top-2 text-[10px] opacity-70">{i + 1}</div>
+                                            {!p && isPloughed && (
+                                                <div className="absolute inset-0 m-1 rounded-lg bg-[#3e2723]/60 mix-blend-overlay ring-1 ring-[#5d4037]/50 flex items-center justify-center pointer-events-none">
+                                                    <span className="opacity-40 text-xs text-white drop-shadow-md">🐂</span>
+                                                </div>
+                                            )}
+                                            {isDead && (
+                                                <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+                                                    <Skull className="w-8 h-8 text-stone-300/60 drop-shadow-lg" />
+                                                </div>
+                                            )}
+                                            {isDying && (
+                                                <div className="absolute top-2 right-2 flex h-2 w-2 pointer-events-none z-10">
+                                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
+                                                </div>
+                                            )}
+                                            {!p ? (
+                                                <div className="flex h-full items-center justify-center text-xs opacity-70">Drop</div>
+                                            ) : (
+                                                <div className={`flex h-full flex-col items-center justify-center gap-1 ${isDead ? 'opacity-40 blur-[1px]' : ''}`}>
+                                                    <div className={`${p.isDead ? 'text-stone-300' : 'text-white'} ${jitter(p) ? 'wj' : ''}`} style={{ transform: `scale(${scale(p)}) rotate(${p.isDead ? -14 : 0}deg)`, transition: 'transform 350ms ease, filter 400ms ease', filter: matureGlow(p) ? 'drop-shadow(0 0 10px rgba(16,185,129,.55))' : 'none' }}>
+                                                        {p.species === 'Potato' ? (
+                                                            <div className="relative h-12 w-12">
+                                                                <div className="absolute left-1/2 top-[60%] -translate-x-1/2 -translate-y-1/2 text-3xl" style={{ opacity: p.growthStage === STAGE.MATURE ? 1 : p.growthStage === STAGE.SPROUT ? 0.45 : 0.15 }}>
+                                                                    🥔
+                                                                </div>
+                                                                <div className="absolute left-1/2 top-[42%] -translate-x-1/2 -translate-y-1/2 text-2xl" style={{ opacity: p.growthStage === STAGE.SEED ? 0 : 1 }}>
+                                                                    {p.growthStage === STAGE.SPROUT ? '🌱' : '🌿'}
+                                                                </div>
                                                             </div>
-                                                            <div className="absolute left-1/2 top-[42%] -translate-x-1/2 -translate-y-1/2 text-2xl" style={{ opacity: p.growthStage === STAGE.SEED ? 0 : 1 }}>
-                                                                {p.growthStage === STAGE.SPROUT ? '🌱' : '🌿'}
+                                                        ) : p.growthStage === STAGE.SEED ? (
+                                                            <div className="flex items-center justify-center">
+                                                                <div className="h-2.5 w-2.5 rounded-full bg-amber-200/40 ring-1 ring-amber-100/20" />
                                                             </div>
+                                                        ) : p.growthStage === STAGE.SPROUT ? (
+                                                            <div className="text-3xl">🌱</div>
+                                                        ) : (
+                                                            <div className="text-3xl">{p.emoji}</div>
+                                                        )}
+                                                    </div>
+                                                    <div className="text-[11px] font-semibold">{p.species}</div>
+                                                    <div className="text-[10px] opacity-80">{p.isDead ? 'Dead' : `${p.growthStage} · ${Math.round(p.growthProgress)}%`}</div>
+                                                    {!!String(p.requiredAction || '') && !p.isDead && (
+                                                        <div className="mt-1 rounded-lg bg-rose-500/15 px-2 py-1 text-[10px] font-semibold ring-1 ring-rose-200/20">
+                                                            {p.requiredAction} in {Math.max(1, Math.ceil(((Number(p.careDueAtMs) || 0) - careNow) / 1000))}
                                                         </div>
-                                                    ) : p.growthStage === STAGE.SEED ? (
-                                                        <div className="flex items-center justify-center">
-                                                            <div className="h-2.5 w-2.5 rounded-full bg-amber-200/40 ring-1 ring-amber-100/20" />
-                                                        </div>
-                                                    ) : p.growthStage === STAGE.SPROUT ? (
-                                                        <div className="text-3xl">🌱</div>
-                                                    ) : (
-                                                        <div className="text-3xl">{p.emoji}</div>
                                                     )}
                                                 </div>
-                                                <div className="text-[11px] font-semibold">{p.species}</div>
-                                                <div className="text-[10px] opacity-80">{p.growthStage} · {Math.round(p.growthProgress)}%</div>
-                                                {!!String(p.requiredAction || '') && !p.isDead && (
-                                                    <div className="mt-1 rounded-lg bg-rose-500/15 px-2 py-1 text-[10px] font-semibold ring-1 ring-rose-200/20">
-                                                        {p.requiredAction} in {Math.max(1, Math.ceil(((Number(p.careDueAtMs) || 0) - careNow) / 1000))}
+                                            )}
+                                            {actionBusy && selection.has(i) && (
+                                                <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/60 rounded-xl backdrop-blur-[1px]">
+                                                    <div className="text-xl animate-bounce filter drop-shadow-lg">{actionBusy.icon}</div>
+                                                    <div className="h-1.5 w-10 mt-2 rounded-full bg-white/20 ring-1 ring-white/10 overflow-hidden">
+                                                        <div className="h-full rounded-full bg-emerald-500 transition-all duration-75 ease-linear" style={{ width: `${(actionBusy.progress / actionBusy.total) * 100}%` }} />
                                                     </div>
-                                                )}
-                                            </div>
-                                        )}
-                                    </div>
-                                ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
                             </div>
                         </div>
 
                         <div className="mt-3 rounded-xl bg-white/10 px-3 py-2 text-[12px] ring-1 ring-white/10">{toast}</div>
+                        {/* Overlay removed as per user request to move busy state to cells */}
                     </main>
 
-                    <aside className={`flex flex-col gap-3 rounded-2xl p-3 ${glass}`}>
+                    <aside className={`flex min-h-0 flex-col gap-3 rounded-2xl p-3 overflow-y-auto ${glass}`}>
                         <div className={`rounded-2xl p-3 ${glass}`}>
-                            <div className="flex items-center gap-2 text-sm font-semibold"><MapPin className="h-5 w-5" />Map & Weather</div>
+                            <div className="flex items-center gap-2 text-sm font-semibold"><MapPin className="h-5 w-5" />Location Map</div>
                             <div className="mt-3 overflow-hidden rounded-xl ring-1 ring-white/10">
                                 <div className="h-44 w-full">
                                     <MapContainer center={mapCenter} zoom={mapZoom} scrollWheelZoom={false} className="h-full w-full">
@@ -1328,62 +1882,11 @@ export default function Home() {
                                 </div>
                             </div>
                             <div className="mt-2 text-[11px] opacity-70 break-words">{mapLabel}</div>
-                            <div className="mt-2 rounded-xl bg-white/10 p-2 text-[11px] ring-1 ring-white/10">
-                                {!WEATHER_API_KEY ? (
-                                    <div className="opacity-80">Set <span className="font-mono">VITE_WEATHER_API_KEY</span> to enable real-time weather.</div>
-                                ) : wxBusy ? (
-                                    <div className="opacity-80">Fetching live weather…</div>
-                                ) : wx ? (
-                                    <div className="grid grid-cols-2 gap-x-3 gap-y-1">
-                                        <div className="col-span-2 font-semibold">{wx.conditionText || 'Current conditions'}</div>
-                                        <div>Temp: <span className="font-semibold">{Number.isFinite(wx.tempC) ? `${Math.round(wx.tempC)}°C` : `${temp}°C`}</span></div>
-                                        <div>Wind: <span className="font-semibold">{Number.isFinite(wx.windKph) ? `${Math.round(wx.windKph)} km/h` : `${Math.round(wind)}`}</span></div>
-                                        <div>Precip: <span className="font-semibold">{Number.isFinite(wx.precipMm) ? `${wx.precipMm} mm` : '-'}</span></div>
-                                        <div>Humidity: <span className="font-semibold">{Number.isFinite(wx.humidity) ? `${Math.round(wx.humidity)}%` : '-'}</span></div>
-                                    </div>
-                                ) : (
-                                    <div className="opacity-80">No live weather yet — type a location and press Apply.</div>
-                                )}
-                            </div>
-                        </div>
-                        <div className={`rounded-2xl p-3 ${glass}`}>
-                            <div className="text-sm font-semibold tracking-wide">Environment</div>
-                            <div className="mt-3 space-y-3 text-xs">
-                                <label className="block">
-                                    <div className="mb-1 flex items-center justify-between">
-                                        <div className="font-semibold">Simulation speed</div>
-                                        <div className="font-semibold">{speedLabel}</div>
-                                    </div>
-                                    <input
-                                        type="range"
-                                        min="0"
-                                        max="2"
-                                        step="1"
-                                        value={speedIdx}
-                                        onChange={(e) => setSpeedIdx(Number(e.target.value))}
-                                        className="w-full"
-                                    />
-                                    <div className="mt-1 flex justify-between text-[11px] opacity-80">
-                                        <span>Slow</span>
-                                        <span>Medium</span>
-                                        <span>Fast</span>
-                                    </div>
-                                </label>
-                                <label className="block">
-                                    <div className="mb-1 flex items-center justify-between"><div className="flex items-center gap-2"><Sun className="h-4 w-4" />Sun</div><div className="font-semibold">{Math.round(sun)}</div></div>
-                                    <input type="range" min="0" max="100" value={sun} onChange={(e) => { sunManualRef.current = true; setSun(Number(e.target.value)); }} className="w-full" />
-                                </label>
-                                <label className="block">
-                                    <div className="mb-1 flex items-center justify-between"><div className="flex items-center gap-2"><CloudRain className="h-4 w-4" />Rain</div><div className="font-semibold">{Math.round(rain)}</div></div>
-                                    <input type="range" min="0" max="100" value={rain} onChange={(e) => { rainManualRef.current = true; setRain(Number(e.target.value)); }} className="w-full" />
-                                </label>
-                                <label className="block">
-                                    <div className="mb-1 flex items-center justify-between"><div className="flex items-center gap-2"><Wind className="h-4 w-4" />Wind</div><div className="font-semibold">{Math.round(wind)}</div></div>
-                                    <input type="range" min="0" max="100" value={wind} onChange={(e) => { windManualRef.current = true; setWind(Number(e.target.value)); }} className="w-full" />
-                                </label>
-                            </div>
                         </div>
 
+
+
+                        {/* Actions Section */}
                         <div className={`rounded-2xl p-3 ${glass}`}>
                             <div className="text-sm font-semibold tracking-wide">Actions</div>
                             {carePrompt && (
@@ -1424,33 +1927,71 @@ export default function Home() {
                                     </button>
                                 </div>
                             )}
+                            <div className="mt-3 grid grid-cols-2 gap-2">
+                                {Object.entries(BACKEND_ACTIONS).map(([key, action]) => (
+                                    <button
+                                        key={key}
+                                        onClick={() => handleBackendAction(key)}
+                                        disabled={!!actionBusy}
+                                        className={`w-full rounded-xl bg-white/10 px-3 py-2 text-sm font-semibold ring-1 ring-white/10 transition-all text-left ${actionBusy ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white/15 active:scale-95'}`}
+                                        title={action.desc}
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-lg">{action.icon}</span>
+                                            <div className="flex flex-col leading-none overflow-hidden w-full">
+                                                <span className="truncate w-full">{action.name}</span>
+                                                <div className="flex justify-between items-center w-full mt-1">
+                                                    <span className="text-[10px] opacity-60 font-mono">{action.cost[biome]}g</span>
+                                                    <span className="text-[9px] opacity-50">{action.duration}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </button>
+                                ))}
+                                <button onClick={clearDead} className="col-span-2 w-full rounded-xl bg-rose-500/20 px-3 py-2 text-sm font-semibold ring-1 ring-rose-200/20 hover:bg-rose-500/30"><div className="flex items-center justify-center gap-2"><Trash2 className="h-4 w-4" />Clear Dead Crops</div></button>
+                            </div>
+                        </div>
+
+                        {/* Crop Recommendations Section */}
+                        <div className={`rounded-2xl p-3 ${glass}`}>
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2 text-sm font-semibold">🌱 Top 3 Recommended Crops</div>
+                                <button
+                                    onClick={fetchRecommendations}
+                                    disabled={recsLoading}
+                                    className="text-[10px] opacity-70 hover:opacity-100 disabled:opacity-40"
+                                >
+                                    {recsLoading ? '...' : '↻'}
+                                </button>
+                            </div>
                             <div className="mt-3 space-y-2">
-                                <button onClick={waterAll} className="w-full rounded-xl bg-emerald-500/25 px-3 py-2 text-sm font-semibold ring-1 ring-emerald-300/20 hover:bg-emerald-500/35"><div className="flex items-center justify-center gap-2"><Droplets className="h-4 w-4" />Water All</div></button>
-                                <button onClick={insecticideAll} className="w-full rounded-xl bg-sky-500/20 px-3 py-2 text-sm font-semibold ring-1 ring-sky-200/20 hover:bg-sky-500/30"><div className="flex items-center justify-center gap-2"><FlaskConical className="h-4 w-4" />Insecticide</div></button>
-                                <button onClick={pesticideAll} className="w-full rounded-xl bg-violet-500/20 px-3 py-2 text-sm font-semibold ring-1 ring-violet-200/20 hover:bg-violet-500/30"><div className="flex items-center justify-center gap-2"><FlaskConical className="h-4 w-4" />Pesticide</div></button>
-                                <button onClick={harvestAll} className="w-full rounded-xl bg-amber-400/20 px-3 py-2 text-sm font-semibold ring-1 ring-amber-200/20 hover:bg-amber-400/30"><div className="flex items-center justify-center gap-2"><Leaf className="h-4 w-4" />Harvest All</div></button>
-                                <button onClick={clearDead} className="w-full rounded-xl bg-rose-500/20 px-3 py-2 text-sm font-semibold ring-1 ring-rose-200/20 hover:bg-rose-500/30"><div className="flex items-center justify-center gap-2"><Trash2 className="h-4 w-4" />Clear Dead Crops</div></button>
-                            </div>
-                            <div className="mt-3 rounded-xl bg-white/10 p-3 text-[12px] ring-1 ring-white/10">
-                                <div className="flex items-center gap-2"><Skull className="h-4 w-4" />Death rules</div>
-                                <div className="mt-1 opacity-80">Drought: Sun&gt;80 & Rain&lt;20. Drowning: Rain&gt;80.</div>
-                            </div>
-                            <div ref={coinBoxRef} className="relative mt-3 overflow-hidden rounded-xl px-3 py-2 text-[12px] ring-1 ring-amber-200/25" style={{ background: 'linear-gradient(180deg, rgba(253,230,138,.22) 0%, rgba(245,158,11,.14) 100%)' }}>
-                                <div className="absolute -right-10 -top-10 h-24 w-24 rounded-full bg-amber-300/10" />
-                                <div className="absolute -right-6 -bottom-10 h-24 w-24 rounded-full bg-yellow-200/10" />
-                                <div className="relative flex items-center justify-between">
-                                    <div className="flex items-center gap-2 font-semibold text-amber-50">
-                                        <img src="/coin_deck.png" alt="Coins" className="h-6 w-6 object-contain" />
-                                        Coins
+                                {recommendations.length === 0 && !recsLoading && (
+                                    <div className="text-[11px] opacity-60">No recommendations yet. Start the backend server.</div>
+                                )}
+                                {recommendations.map((rec, i) => (
+                                    <div
+                                        key={rec.crop}
+                                        className={`flex items-center justify-between rounded-xl px-3 py-2 ring-1 ${i === 0 ? 'bg-emerald-500/20 ring-emerald-300/20' :
+                                            i === 1 ? 'bg-amber-500/15 ring-amber-300/15' :
+                                                'bg-white/10 ring-white/10'
+                                            }`}
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-[12px] font-bold opacity-60">#{i + 1}</span>
+                                            <span className="font-semibold text-sm">{rec.crop}</span>
+                                        </div>
+                                        <span className={`text-sm font-bold ${i === 0 ? 'text-emerald-400' : i === 1 ? 'text-amber-400' : 'text-white/70'}`}>
+                                            {typeof rec.score === 'number' ? `${Math.round(rec.score)}g` : rec.score}
+                                        </span>
                                     </div>
-                                    <div className="text-sm font-extrabold text-amber-100" style={{ textShadow: '0 0 14px rgba(245,158,11,.22)' }}>{coins}</div>
-                                </div>
+                                ))}
                             </div>
+                            <div className="mt-2 text-[10px] opacity-50">Based on current soil & weather conditions</div>
                         </div>
                     </aside>
 
                 </div>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 }
