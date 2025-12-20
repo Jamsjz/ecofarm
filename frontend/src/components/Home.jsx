@@ -1546,14 +1546,9 @@ export default function Home() {
                             <div className="flex items-center gap-2 text-sm font-semibold"><Leaf className="h-5 w-5" />Field Stats</div>
                             <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
                                 <div className="rounded-xl bg-white/10 p-3 ring-1 ring-white/10"><div className="text-[11px] opacity-70">Avg health</div><div className="mt-1 text-xl font-semibold">{Math.round(avgHealth)}</div></div>
-                                <div className="rounded-xl bg-white/10 p-3 ring-1 ring-white/10"><div className="text-[11px] opacity-70">Plants</div><div className="mt-1 text-xl font-semibold">{alive}/{total}</div></div>
                                 <div className="rounded-xl bg-white/10 p-3 ring-1 ring-white/10"><div className="text-[11px] opacity-70">Temp</div><div className="mt-1 text-xl font-semibold">{Math.round(temp)}°C</div></div>
                                 <div className="rounded-xl bg-white/10 p-3 ring-1 ring-white/10"><div className="text-[11px] opacity-70">Rain</div><div className="mt-1 text-xl font-semibold">{Math.round(rain)}mm</div></div>
                                 <div className="rounded-xl bg-white/10 p-3 ring-1 ring-white/10"><div className="text-[11px] opacity-70">Wind</div><div className="mt-1 text-xl font-semibold">{Math.round(wind)}km/h</div></div>
-                                <div className="rounded-xl bg-white/10 p-3 ring-1 ring-white/10"><div className="text-[11px] opacity-70">Sun</div><div className="mt-1 text-xl font-semibold">{Math.round(sun)}%</div></div>
-                            </div>
-                            <div className="mt-3 rounded-xl bg-white/10 p-3 text-[12px] ring-1 ring-white/10">
-                                <div className="flex items-center justify-between"><div className="flex items-center gap-2"><MapPin className="h-4 w-4" />{biome}</div><div className="font-semibold">{temp}°C</div></div>
                             </div>
                         </div>
 
