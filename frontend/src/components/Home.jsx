@@ -15,7 +15,7 @@ const STAGE = { SEED: 'Seed', SPROUT: 'Sprout', MATURE: 'Mature' };
 const ACTION = { WATER: 'Water', INSECTICIDE: 'Insecticide', PESTICIDE: 'Pesticide' };
 const NURSERY = [
     { species: 'Rice', emoji: '🌾', diff: 3, pref: BIOME.TERAI },
-    { species: 'Maize', emoji: '玉米', diff: 2, pref: BIOME.HILLY },
+    { species: 'Maize', emoji: '🌽', diff: 2, pref: BIOME.HILLY },
     { species: 'Banana', emoji: '🍌', diff: 3, pref: BIOME.TERAI },
     { species: 'Mango', emoji: '🥭', diff: 3, pref: BIOME.TERAI },
     { species: 'Apple', emoji: '🍎', diff: 4, pref: BIOME.MOUNTAIN },
@@ -1618,6 +1618,7 @@ export default function Home() {
                                     <div className="text-lg leading-none">💰</div>
                                     {coins}g
                                 </div>
+                                <div className="rounded-xl bg-white/10 px-3 py-2 text-sm ring-1 ring-white/10">{toast}</div>
                             </div>
 
                             <div className="relative" ref={nurseryRef}>
@@ -1862,7 +1863,6 @@ export default function Home() {
                             </div>
                         </div>
 
-                        <div className="mt-3 rounded-xl bg-white/10 px-3 py-2 text-[12px] ring-1 ring-white/10">{toast}</div>
                         {/* Overlay removed as per user request to move busy state to cells */}
                     </main>
 
