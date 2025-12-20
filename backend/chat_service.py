@@ -2,7 +2,8 @@ import os
 import google.generativeai as genai
 from dotenv import load_dotenv
 from game_engine.engine import GameState
-import numpy as np
+from PIL import Image
+import io
 
 load_dotenv()
 
@@ -11,7 +12,7 @@ if API_KEY:
     genai.configure(api_key=API_KEY)
 
 # Use a fallback if the specific model isn't available, but try to respect user wish or standard
-MODEL_NAME = "gemini-2.5-flash"  # Switched to 1.5 Flash for better speed/stability
+MODEL_NAME = "gemini-2.5-flash"
 
 
 def get_chat_response(
@@ -77,66 +78,7 @@ def _summarize_grid(grid):
     return "\n".join(summary)
 
 
-import tensorflow as tf
-import numpy as np
-from io import BytesIO
-
-m = tf.keras.models.load_model("trained_model.h5")
-class_name = [
-    "Apple___Apple_scab",
-    "Apple___Black_rot",
-    "Apple___Cedar_apple_rust",
-    "Apple___healthy",
-    "Blueberry___healthy",
-    "Cherry_(including_sour)___Powdery_mildew",
-    "Cherry_(including_sour)___healthy",
-    "Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot",
-    "Corn_(maize)___Common_rust_",
-    "Corn_(maize)___Northern_Leaf_Blight",
-    "Corn_(maize)___healthy",
-    "Grape___Black_rot",
-    "Grape___Esca_(Black_Measles)",
-    "Grape___Leaf_blight_(Isariopsis_Leaf_Spot)",
-    "Grape___healthy",
-    "Orange___Haunglongbing_(Citrus_greening)",
-    "Peach___Bacterial_spot",
-    "Peach___healthy",
-    "Pepper,_bell___Bacterial_spot",
-    "Pepper,_bell___healthy",
-    "Potato___Early_blight",
-    "Potato___Late_blight",
-    "Potato___healthy",
-    "Raspberry___healthy",
-    "Soybean___healthy",
-    "Squash___Powdery_mildew",
-    "Strawberry___Leaf_scorch",
-    "Strawberry___healthy",
-    "Tomato___Bacterial_spot",
-    "Tomato___Early_blight",
-    "Tomato___Late_blight",
-    "Tomato___Leaf_Mold",
-    "Tomato___Septoria_leaf_spot",
-    "Tomato___Spider_mites Two-spotted_spider_mite",
-    "Tomato___Target_Spot",
-    "Tomato___Tomato_Yellow_Leaf_Curl_Virus",
-    "Tomato___Tomato_mosaic_virus",
-    "Tomato___healthy",
-]
-
-
-def predict_disease(file: BytesIO):
-    image = tf.keras.utils.load_img(
-        file, target_size=(128, 128)
-    )  # or tf.keras.preprocessing.image.load_img
-    input_arr = tf.keras.utils.img_to_array(image)
-    input_arr = np.expand_dims(input_arr, axis=0)  # (1, 128, 128, 3)
-    prediction = m.predict(input_arr)
-    result_index = int(np.argmax(prediction))
-
-    return class_name[result_index]
-
-
-def summarize_disease(ctx, message: str, disease: str):
+def analyze_disease_chat(ctx, message: str, image_bytes: bytes = None):
     if not API_KEY:
         print("Error: GEMINI_API_KEY not found.")
         return "Error: GEMINI_API_KEY not found in environment variables."
@@ -145,24 +87,70 @@ def summarize_disease(ctx, message: str, disease: str):
         print(f"Generating response with model: {MODEL_NAME}...")
         model = genai.GenerativeModel(MODEL_NAME)
 
-        # Construct the prompt
-        prompt = f"""
-        You are an expert agricultural pathologist that explains about a disease in a farming simulation game called EcoFarm.
-        
-        Previous Conversation:
-        {ctx}
-        
-        User Message: "{message if message else 'No message provided just explain about the disease'}"
-        Disease predicted from leaf: {disease}
-        
-        Task:
-        1. Give Introduction, Causes, Effects and Preventive measures for the disease in a simple manner.
-        """
+        # Build conversation context
+        conversation_history = ""
+        if ctx:
+            for msg in ctx:
+                role = "User" if msg.role == "user" else "Pathologer"
+                conversation_history += f"{role}: {msg.content}\n"
 
-        print("Sending prompt to Gemini...")
-        response = model.generate_content(prompt)
+        # Prepare inputs
+        inputs = []
+        
+        # Add system prompt / context
+        system_prompt = f"""You are **Pathologer Prime**, an advanced agricultural diagnostic AI with PhD-level expertise in plant pathology, agronomy, and computer vision.
+
+Your mandate is to provide the **ultimate analysis** of plant health. You do not just "look" at an image; you *investigate* it.
+
+Previous Conversation:
+{conversation_history}
+
+User Query: "{message if message else 'Analyze this image with maximum depth.'}"
+
+### **FORENSIC ANALYSIS PROTOCOL**
+1.  **Macro & Micro Observation**:
+    -   Scan the *entire* image. detailed texture analysis of the leaf surface.
+    -   Identify subtle chlorosis patterns (interveinal vs. uniform), lesion halos (yellow? water-soaked?), and necrotic patterns.
+    -   Look for "signs" (physical presence of pathogen: spores, mold, frass) vs "symptoms" (plant's reaction).
+    -   Check the background: Is the soil visible? Is it dry/cracked? Are nearby plants healthy?
+2.  **Differential Diagnosis (The "Why")**:
+    -   Consider multiple possibilities. Is it *Early Blight* or just *Nutrient Deficiency*? Explain your reasoning for ruling things out.
+    -   Connect visual evidence to biological processes (e.g., "The V-shaped yellowing suggests nitrogen deficiency moving from tip to base...").
+3.  **The Verdict**:
+    -   State the problem with **high precision**.
+    -   If Healthy: Praise the specific traits (turgidity, color uniformity).
+4.  **Strategic Action Plan**:
+    -   **Immediate**: What to do TODAY (prune, isolate, water).
+    -   **Organic**: Non-chemical fixes (Neem oil, copper fungicide, compost tea).
+    -   **Chemical**: If severe, what specific active ingredients to look for.
+
+### **RESPONSE FORMAT**
+Use a professional yet accessible Markdown structure:
+*   **🔍 Forensic Observations**: Bullet points of specific visual evidence.
+*   **🩺 Diagnosis**: The definitive conclusion.
+*   **🧠 Analysis**: The reasoning (Why X and not Y?).
+*   **🛡️ Treatment Protocol**: Step-by-step cure.
+
+*Trust your vision. If the image is unclear, state exactly what is ambiguous. If clear, be decisive.*
+
+Respond as Pathologer Prime:"""
+        
+        inputs.append(system_prompt)
+
+        if image_bytes:
+            try:
+                print("Processing image for Gemini...")
+                image = Image.open(io.BytesIO(image_bytes))
+                inputs.append(image)
+                print("Image added to inputs.")
+            except Exception as img_e:
+                print(f"Error processing image: {img_e}")
+                return f"Error processing image: {img_e}"
+
+        print("Sending prompt (and image) to Gemini with Search enabled...")
+        response = model.generate_content(inputs)
         print("Received response from Gemini.")
         return response.text
     except Exception as e:
-        print(f"Error in get_chat_response: {e}")
+        print(f"Error in analyze_disease_chat: {e}")
         return f"Error generating response: {str(e)}"

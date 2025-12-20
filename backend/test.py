@@ -1,4 +1,5 @@
-from game_engine.clock import Clock
-import time
+from chat_service import predict_disease
+from io import BytesIO
 
-clock = Clock()
+byteimage = BytesIO(open("test.jpg", "rb").read())
+print(predict_disease(byteimage))

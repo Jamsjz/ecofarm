@@ -139,6 +139,20 @@ export default function LandingPage({ onNavigate, onExplore, activePage }) {
 
 
                         <div className="layout">
+                            <div style={{ position: 'absolute', top: 20, right: 20, zIndex: 1000 }}>
+                                <a
+                                    href="http://localhost:3000"
+                                    className="backBtn"
+                                    style={{
+                                        textDecoration: 'none',
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '8px'
+                                    }}
+                                >
+                                    <span>Back to EcoFarm</span>
+                                </a>
+                            </div>
                             <motion.section
                                 className="hero"
                                 initial="hidden"

@@ -4,7 +4,6 @@ import LandingPage from './LandingPage'
 import HowItWorks from './pages/HowItWorks'
 import Contact from './pages/Contact'
 import Detection from './pages/Detection'
-import LoadingScreen from './components/LoadingScreen'
 
 // Navigation Component (shared or unique per page)
 // For simplicity and since LandingPage 'is perfect', we'll let each page handle its own header
@@ -67,15 +66,7 @@ export default function App() {
     const [prevPage, setPrevPage] = useState(getPageFromHash)
     const [direction, setDirection] = useState(0)
     const [exploreTransition, setExploreTransition] = useState(null)
-    const [isLoading, setIsLoading] = useState(true)
     const [isFirstReveal, setIsFirstReveal] = useState(true)
-
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setIsLoading(false)
-        }, 3000)
-        return () => clearTimeout(timer)
-    }, [])
 
     useEffect(() => {
         const handleHashChange = () => {
@@ -128,19 +119,6 @@ export default function App() {
 
     return (
         <div className="cube-wrap">
-            <AnimatePresence>
-                {isLoading && (
-                    <motion.div
-                        key="loading-screen"
-                        initial={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.5 }}
-                        style={{ position: 'relative', zIndex: 100000 }}
-                    >
-                        <LoadingScreen />
-                    </motion.div>
-                )}
-            </AnimatePresence>
             <AnimatePresence>
                 {exploreTransition && (
                     <motion.div
@@ -195,24 +173,22 @@ export default function App() {
                     />
                 )}
             </AnimatePresence>
-            {!isLoading && (
-                <AnimatePresence custom={direction} mode="wait">
-                    <motion.div
-                        key={activePage}
-                        custom={direction}
-                        variants={isFirstReveal ? revealVariants : (exploreTransition ? fadeVariants : cubeVariants)}
-                        initial="enter"
-                        animate="center"
-                        exit="exit"
-                        className="cube-page"
-                        onAnimationComplete={() => {
-                            if (isFirstReveal) setIsFirstReveal(false)
-                        }}
-                    >
-                        {renderPage()}
-                    </motion.div>
-                </AnimatePresence>
-            )}
+            <AnimatePresence custom={direction} mode="wait">
+                <motion.div
+                    key={activePage}
+                    custom={direction}
+                    variants={isFirstReveal ? revealVariants : (exploreTransition ? fadeVariants : cubeVariants)}
+                    initial="enter"
+                    animate="center"
+                    exit="exit"
+                    className="cube-page"
+                    onAnimationComplete={() => {
+                        if (isFirstReveal) setIsFirstReveal(false)
+                    }}
+                >
+                    {renderPage()}
+                </motion.div>
+            </AnimatePresence>
         </div>
     )
 }
