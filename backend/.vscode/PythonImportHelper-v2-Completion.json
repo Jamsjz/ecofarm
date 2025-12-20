@@ -44,12 +44,56 @@
         "documentation": {}
     },
     {
+        "label": "streamlit",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "streamlit",
+        "description": "streamlit",
+        "detail": "streamlit",
+        "documentation": {}
+    },
+    {
+        "label": "tensorflow",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "tensorflow",
+        "description": "tensorflow",
+        "detail": "tensorflow",
+        "documentation": {}
+    },
+    {
+        "label": "numpy",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "numpy",
+        "description": "numpy",
+        "detail": "numpy",
+        "documentation": {}
+    },
+    {
         "label": "time",
         "kind": 6,
         "isExtraImport": true,
         "importPath": "time",
         "description": "time",
         "detail": "time",
+        "documentation": {}
+    },
+    {
+        "label": "dataclasses",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "dataclasses",
+        "description": "dataclasses",
+        "detail": "dataclasses",
+        "documentation": {}
+    },
+    {
+        "label": "dataclass",
+        "importPath": "dataclasses",
+        "description": "dataclasses",
+        "isExtraImport": true,
+        "detail": "dataclasses",
         "documentation": {}
     },
     {
@@ -173,36 +217,36 @@
         "documentation": {}
     },
     {
-        "label": "FastAPI",
-        "importPath": "fastapi",
-        "description": "fastapi",
+        "label": "BaseModel",
+        "importPath": "pydantic",
+        "description": "pydantic",
         "isExtraImport": true,
-        "detail": "fastapi",
+        "detail": "pydantic",
         "documentation": {}
     },
     {
-        "label": "HTTPException",
-        "importPath": "fastapi",
-        "description": "fastapi",
-        "isExtraImport": true,
-        "detail": "fastapi",
-        "documentation": {}
-    },
-    {
-        "label": "CORSMiddleware",
-        "importPath": "fastapi.middleware.cors",
-        "description": "fastapi.middleware.cors",
-        "isExtraImport": true,
-        "detail": "fastapi.middleware.cors",
-        "documentation": {}
-    },
-    {
-        "label": "numpy",
+        "label": "google.generativeai",
         "kind": 6,
         "isExtraImport": true,
-        "importPath": "numpy",
-        "description": "numpy",
-        "detail": "numpy",
+        "importPath": "google.generativeai",
+        "description": "google.generativeai",
+        "detail": "google.generativeai",
+        "documentation": {}
+    },
+    {
+        "label": "load_dotenv",
+        "importPath": "dotenv",
+        "description": "dotenv",
+        "isExtraImport": true,
+        "detail": "dotenv",
+        "documentation": {}
+    },
+    {
+        "label": "GameState",
+        "importPath": "game_engine.engine",
+        "description": "game_engine.engine",
+        "isExtraImport": true,
+        "detail": "game_engine.engine",
         "documentation": {}
     },
     {
@@ -251,6 +295,95 @@
         "description": "game_engine.engine",
         "isExtraImport": true,
         "detail": "game_engine.engine",
+        "documentation": {}
+    },
+    {
+        "label": "io",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "io",
+        "description": "io",
+        "detail": "io",
+        "documentation": {}
+    },
+    {
+        "label": "BytesIO",
+        "importPath": "io",
+        "description": "io",
+        "isExtraImport": true,
+        "detail": "io",
+        "documentation": {}
+    },
+    {
+        "label": "BytesIO",
+        "importPath": "io",
+        "description": "io",
+        "isExtraImport": true,
+        "detail": "io",
+        "documentation": {}
+    },
+    {
+        "label": "FastAPI",
+        "importPath": "fastapi",
+        "description": "fastapi",
+        "isExtraImport": true,
+        "detail": "fastapi",
+        "documentation": {}
+    },
+    {
+        "label": "File",
+        "importPath": "fastapi",
+        "description": "fastapi",
+        "isExtraImport": true,
+        "detail": "fastapi",
+        "documentation": {}
+    },
+    {
+        "label": "HTTPException",
+        "importPath": "fastapi",
+        "description": "fastapi",
+        "isExtraImport": true,
+        "detail": "fastapi",
+        "documentation": {}
+    },
+    {
+        "label": "UploadFile",
+        "importPath": "fastapi",
+        "description": "fastapi",
+        "isExtraImport": true,
+        "detail": "fastapi",
+        "documentation": {}
+    },
+    {
+        "label": "CORSMiddleware",
+        "importPath": "fastapi.middleware.cors",
+        "description": "fastapi.middleware.cors",
+        "isExtraImport": true,
+        "detail": "fastapi.middleware.cors",
+        "documentation": {}
+    },
+    {
+        "label": "predict_disease",
+        "importPath": "chat_service",
+        "description": "chat_service",
+        "isExtraImport": true,
+        "detail": "chat_service",
+        "documentation": {}
+    },
+    {
+        "label": "summarize_disease",
+        "importPath": "chat_service",
+        "description": "chat_service",
+        "isExtraImport": true,
+        "detail": "chat_service",
+        "documentation": {}
+    },
+    {
+        "label": "get_chat_response",
+        "importPath": "chat_service",
+        "description": "chat_service",
+        "isExtraImport": true,
+        "detail": "chat_service",
         "documentation": {}
     },
     {
@@ -368,6 +501,24 @@
         "documentation": {}
     },
     {
+        "label": "model_prediction",
+        "kind": 2,
+        "importPath": "disease-prediction.main",
+        "description": "disease-prediction.main",
+        "peekOfCode": "def model_prediction(test_image):\n    model  = tf.keras.models.load_model('trained_model.h5')\n    image = tf.keras.preprocessing.image.load_img(test_image,target_size=(128, 128))\n    input_arr = tf.keras.preprocessing.image.img_to_array(image)\n    input_arr = np.array([input_arr]) #Convert single image to a batch\n    prediction = model.predict(input_arr)\n    result_index = np.argmax(prediction)\n    return result_index\n#Sidebar\nst.sidebar.title(\"Dashboard\")",
+        "detail": "disease-prediction.main",
+        "documentation": {}
+    },
+    {
+        "label": "app_mode",
+        "kind": 5,
+        "importPath": "disease-prediction.main",
+        "description": "disease-prediction.main",
+        "peekOfCode": "app_mode = st.sidebar.selectbox(\"Select Page\",[\"Home\",\"About\",\"Disease Recognition\"])\n#Home Page\nif(app_mode==\"Home\"):\n    st.header(\"PLANT DISEASE RECOGNITION SYSTEM\")\n    image_path = \"home_page.jpeg\"\n    st.image(image_path,use_column_width=True)\n    st.markdown(\"\"\"\n    Welcome to the Plant Disease Recognition System! 🌿🔍\n    Our mission is to help in identifying plant diseases efficiently. Upload an image of a plant, and our system will analyze it to detect any signs of diseases. Together, let's protect our crops and ensure a healthier harvest!\n    ### How It Works",
+        "detail": "disease-prediction.main",
+        "documentation": {}
+    },
+    {
         "label": "Clock",
         "kind": 6,
         "importPath": "game_engine.clock",
@@ -428,6 +579,69 @@
         "description": "game_engine.engine",
         "peekOfCode": "class InitRequest(BaseModel):\n    \"\"\"Request model for game initialization\"\"\"\n    region: str = \"Hilly\"\n    lat: Optional[float] = None\n    lng: Optional[float] = None",
         "detail": "game_engine.engine",
+        "documentation": {}
+    },
+    {
+        "label": "get_chat_response",
+        "kind": 2,
+        "importPath": "chat_service",
+        "description": "chat_service",
+        "peekOfCode": "def get_chat_response(\n    message: str, game_state: GameState, recent_actions: list, predictions: dict\n) -> str:\n    if not API_KEY:\n        print(\"Error: GEMINI_API_KEY not found.\")\n        return \"Error: GEMINI_API_KEY not found in environment variables.\"\n    try:\n        print(f\"Generating response with model: {MODEL_NAME}...\")\n        model = genai.GenerativeModel(MODEL_NAME)\n        # Construct the prompt",
+        "detail": "chat_service",
+        "documentation": {}
+    },
+    {
+        "label": "predict_disease",
+        "kind": 2,
+        "importPath": "chat_service",
+        "description": "chat_service",
+        "peekOfCode": "def predict_disease(file: BytesIO):\n    image = tf.keras.utils.load_img(\n        file, target_size=(128, 128)\n    )  # or tf.keras.preprocessing.image.load_img\n    input_arr = tf.keras.utils.img_to_array(image)\n    input_arr = np.expand_dims(input_arr, axis=0)  # (1, 128, 128, 3)\n    prediction = m.predict(input_arr)\n    result_index = int(np.argmax(prediction))\n    return class_name[result_index]\ndef summarize_disease(ctx, message: str, disease: str):",
+        "detail": "chat_service",
+        "documentation": {}
+    },
+    {
+        "label": "summarize_disease",
+        "kind": 2,
+        "importPath": "chat_service",
+        "description": "chat_service",
+        "peekOfCode": "def summarize_disease(ctx, message: str, disease: str):\n    if not API_KEY:\n        print(\"Error: GEMINI_API_KEY not found.\")\n        return \"Error: GEMINI_API_KEY not found in environment variables.\"\n    try:\n        print(f\"Generating response with model: {MODEL_NAME}...\")\n        model = genai.GenerativeModel(MODEL_NAME)\n        # Construct the prompt\n        prompt = f\"\"\"\n        You are an expert agricultural pathologist that explains about a disease in a farming simulation game called EcoFarm.",
+        "detail": "chat_service",
+        "documentation": {}
+    },
+    {
+        "label": "API_KEY",
+        "kind": 5,
+        "importPath": "chat_service",
+        "description": "chat_service",
+        "peekOfCode": "API_KEY = os.getenv(\"GEMINI_API_KEY\")\nif API_KEY:\n    genai.configure(api_key=API_KEY)\n# Use a fallback if the specific model isn't available, but try to respect user wish or standard\nMODEL_NAME = \"gemini-2.5-flash\"  # Switched to 1.5 Flash for better speed/stability\ndef get_chat_response(\n    message: str, game_state: GameState, recent_actions: list, predictions: dict\n) -> str:\n    if not API_KEY:\n        print(\"Error: GEMINI_API_KEY not found.\")",
+        "detail": "chat_service",
+        "documentation": {}
+    },
+    {
+        "label": "MODEL_NAME",
+        "kind": 5,
+        "importPath": "chat_service",
+        "description": "chat_service",
+        "peekOfCode": "MODEL_NAME = \"gemini-2.5-flash\"  # Switched to 1.5 Flash for better speed/stability\ndef get_chat_response(\n    message: str, game_state: GameState, recent_actions: list, predictions: dict\n) -> str:\n    if not API_KEY:\n        print(\"Error: GEMINI_API_KEY not found.\")\n        return \"Error: GEMINI_API_KEY not found in environment variables.\"\n    try:\n        print(f\"Generating response with model: {MODEL_NAME}...\")\n        model = genai.GenerativeModel(MODEL_NAME)",
+        "detail": "chat_service",
+        "documentation": {}
+    },
+    {
+        "label": "m",
+        "kind": 5,
+        "importPath": "chat_service",
+        "description": "chat_service",
+        "peekOfCode": "m = tf.keras.models.load_model(\"trained_model.h5\")\nclass_name = [\n    \"Apple___Apple_scab\",\n    \"Apple___Black_rot\",\n    \"Apple___Cedar_apple_rust\",\n    \"Apple___healthy\",\n    \"Blueberry___healthy\",\n    \"Cherry_(including_sour)___Powdery_mildew\",\n    \"Cherry_(including_sour)___healthy\",\n    \"Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot\",",
+        "detail": "chat_service",
+        "documentation": {}
+    },
+    {
+        "label": "class_name",
+        "kind": 5,
+        "importPath": "chat_service",
+        "description": "chat_service",
+        "peekOfCode": "class_name = [\n    \"Apple___Apple_scab\",\n    \"Apple___Black_rot\",\n    \"Apple___Cedar_apple_rust\",\n    \"Apple___healthy\",\n    \"Blueberry___healthy\",\n    \"Cherry_(including_sour)___Powdery_mildew\",\n    \"Cherry_(including_sour)___healthy\",\n    \"Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot\",\n    \"Corn_(maize)___Common_rust_\",",
+        "detail": "chat_service",
         "documentation": {}
     },
     {
@@ -512,6 +726,24 @@
         "documentation": {}
     },
     {
+        "label": "ChatRequest",
+        "kind": 6,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "class ChatRequest(BaseModel):\n    message: Optional[str] = None\n    recent_actions: List[str] = []\n    game_state: Optional[dict] = None  # Frontend can send game state directly\ndef get_region_from_elevation(elevation: float) -> str:\n    \"\"\"Determine region based on elevation in meters\"\"\"\n    if elevation < 300:\n        return \"Terai\"\n    elif elevation < 2000:\n        return \"Hilly\"",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "Message",
+        "kind": 6,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "class Message:\n    role: str\n    content: str\nmessages = []\n@app.post(\"/dpredict\")\nasync def predict_endpoint(message: str, image: UploadFile = File(...)):\n    contents = await image.read()  # bytes\n    file_obj = BytesIO(contents)  # BinaryIO-like object\n    disease = predict_disease(file_obj)\n    chatres = summarize_disease(messages, message, disease)",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
         "label": "get_region_from_elevation",
         "kind": 2,
         "importPath": "main",
@@ -534,7 +766,7 @@
         "kind": 2,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "def get_meta():\n    \"\"\"Get game metadata: crops, actions, and regions\"\"\"\n    return {\n        \"crops\": CROPS,\n        \"actions\": ACTIONS,\n        \"regions\": REGIONS\n    }\n@app.get(\"/regions\")\ndef get_regions():\n    \"\"\"Get available regions with their defaults\"\"\"",
+        "peekOfCode": "def get_meta():\n    \"\"\"Get game metadata: crops, actions, and regions\"\"\"\n    return {\"crops\": CROPS, \"actions\": ACTIONS, \"regions\": REGIONS}\n@app.get(\"/regions\")\ndef get_regions():\n    \"\"\"Get available regions with their defaults\"\"\"\n    return REGIONS\n@app.get(\"/crops\")\ndef get_crops():\n    \"\"\"Get all available crops with their costs and ideal conditions\"\"\"",
         "detail": "main",
         "documentation": {}
     },
@@ -588,7 +820,7 @@
         "kind": 2,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "def init_game(request: InitRequest):\n    \"\"\"Initialize a new game with specified region\"\"\"\n    global game_state\n    region = request.region\n    if region not in REGIONS:\n        region = \"Hilly\"\n    game_state = GameState(\n        region=region,\n        location=region,\n        gold=1000,",
+        "peekOfCode": "def init_game(request: InitRequest):\n    \"\"\"Initialize a new game with specified region\"\"\"\n    global game_state\n    region = request.region\n    if region not in REGIONS:\n        region = \"Hilly\"\n    game_state = GameState(\n        region=region, location=region, gold=1000, day=1, grid=initialize_grid(region)\n    )\n    return {",
         "detail": "main",
         "documentation": {}
     },
@@ -687,7 +919,16 @@
         "kind": 2,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "def get_average_recommendations():\n    \"\"\"Get crop recommendations based on average soil state across all cells\"\"\"\n    global game_state\n    if game_state is None:\n        # Return default recommendations\n        recommendations = model.get_recommendations(\n            n=40, p=40, k=40,\n            temperature=25, humidity=65, ph=6.5, rainfall=100,\n            top_n=3\n        )",
+        "peekOfCode": "def get_average_recommendations():\n    \"\"\"Get crop recommendations based on average soil state across all cells\"\"\"\n    global game_state\n    if game_state is None:\n        # Return default recommendations\n        recommendations = model.get_recommendations(\n            n=40, p=40, k=40, temperature=25, humidity=65, ph=6.5, rainfall=100, top_n=3\n        )\n        return {\"recommendations\": recommendations}\n    # Calculate averages",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "chat_with_lab",
+        "kind": 2,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "def chat_with_lab(request: ChatRequest):\n    \"\"\"\n    Chat with the laboratory AI assistant.\n    Uses Gemini to analyze game state, recent actions, and model predictions.\n    \"\"\"\n    global game_state\n    # Use frontend-provided game state if available, else use server state\n    current_state = None\n    if request.game_state:\n        # Build GameState from frontend data",
         "detail": "main",
         "documentation": {}
     },
@@ -723,7 +964,7 @@
         "kind": 5,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "clock = Clock()\ngame_state: Optional[GameState] = None\nmodel = Model()\ndef get_region_from_elevation(elevation: float) -> str:\n    \"\"\"Determine region based on elevation in meters\"\"\"\n    if elevation < 300:\n        return \"Terai\"\n    elif elevation < 2000:\n        return \"Hilly\"\n    else:",
+        "peekOfCode": "clock = Clock()\ngame_state: Optional[GameState] = None\nmodel = Model()\nclass ChatRequest(BaseModel):\n    message: Optional[str] = None\n    recent_actions: List[str] = []\n    game_state: Optional[dict] = None  # Frontend can send game state directly\ndef get_region_from_elevation(elevation: float) -> str:\n    \"\"\"Determine region based on elevation in meters\"\"\"\n    if elevation < 300:",
         "detail": "main",
         "documentation": {}
     },
@@ -732,7 +973,16 @@
         "kind": 5,
         "importPath": "main",
         "description": "main",
-        "peekOfCode": "model = Model()\ndef get_region_from_elevation(elevation: float) -> str:\n    \"\"\"Determine region based on elevation in meters\"\"\"\n    if elevation < 300:\n        return \"Terai\"\n    elif elevation < 2000:\n        return \"Hilly\"\n    else:\n        return \"Himalayan\"\ndef initialize_grid(region: str) -> List[CellState]:",
+        "peekOfCode": "model = Model()\nclass ChatRequest(BaseModel):\n    message: Optional[str] = None\n    recent_actions: List[str] = []\n    game_state: Optional[dict] = None  # Frontend can send game state directly\ndef get_region_from_elevation(elevation: float) -> str:\n    \"\"\"Determine region based on elevation in meters\"\"\"\n    if elevation < 300:\n        return \"Terai\"\n    elif elevation < 2000:",
+        "detail": "main",
+        "documentation": {}
+    },
+    {
+        "label": "messages",
+        "kind": 5,
+        "importPath": "main",
+        "description": "main",
+        "peekOfCode": "messages = []\n@app.post(\"/dpredict\")\nasync def predict_endpoint(message: str, image: UploadFile = File(...)):\n    contents = await image.read()  # bytes\n    file_obj = BytesIO(contents)  # BinaryIO-like object\n    disease = predict_disease(file_obj)\n    chatres = summarize_disease(messages, message, disease)\n    retdict = {\"chatres\": chatres}\n    messages.append(Message(role=\"user\", content=message))\n    messages.append(Message(role=\"assistant\", content=chatres))",
         "detail": "main",
         "documentation": {}
     },
