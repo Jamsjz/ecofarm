@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import io
 from typing import List, Optional
 from pydantic import BaseModel
-from chat_service import predict_disease, summarize_disease
+from chat_service import get_chat_response, analyze_disease_chat
 import numpy as np
 import urllib.request
 import json
@@ -758,12 +758,19 @@ messages = []
 @app.post("/dpredict")
 async def predict_endpoint(message: str, image: UploadFile = File(...)):
     contents = await image.read()  # bytes
-    file_obj = BytesIO(contents)  # BinaryIO-like object
-    disease = predict_disease(file_obj)
-    chatres = summarize_disease(messages, message, disease)
+    
+    # Check if image is valid/provided (not placeholder)
+    # The frontend sends a placeholder Blob([''], type='image/png') if no image
+    # calculated size of 'placeholder' might be tiny. 
+    # But let's just pass contents. If it fails to open as image, the service handles it.
+    
+    chatres = analyze_disease_chat(messages, message, contents)
     retdict = {"chatres": chatres}
+    
+    # Update local history
     messages.append(Message(role="user", content=message))
     messages.append(Message(role="assistant", content=chatres))
+    
     return retdict
 
 

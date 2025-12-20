@@ -591,7 +591,7 @@ export default function Home() {
 
         const q = String(text || '').trim();
         if (!q) return;
-        
+
         setToast(`Searching for ${q}...`);
 
         void (async () => {
@@ -628,7 +628,7 @@ export default function Home() {
                     const wxRes = await fetch(wxUrl, { method: 'GET', signal: wxController.signal });
                     if (!wxRes.ok) throw new Error('Backend weather fetch failed');
                     const wxData = await wxRes.json();
-                    
+
                     if (wxData.region) setBiome(wxData.region);
                     if (wxData.weather) {
                         setTemp(Math.round(wxData.weather.temperature));
@@ -671,7 +671,7 @@ export default function Home() {
                     const wxRes = await fetch(wxUrl, { method: 'GET', signal: controller.signal });
                     if (!wxRes.ok) return;
                     const wxData = await wxRes.json();
-                    
+
                     if (wxData.weather) {
                         setTemp(Math.round(wxData.weather.temperature));
                         setRain(Math.round(wxData.weather.rain));
@@ -753,7 +753,7 @@ export default function Home() {
                 const deltaDays = 1 / DAY_TICKS;
                 // Rate 1.0 means 1 growth day per 1 simulation day.
                 let rate = 1.0;
-                
+
                 // Pure time-based growth
                 growthDays = clamp(growthDays + deltaDays * rate, 0, profile.daysToMature);
                 const gp = clamp((growthDays / profile.daysToMature) * 100, 0, 100);
@@ -1329,6 +1329,7 @@ export default function Home() {
 
     return (
         <div className="relative h-screen flex flex-col w-full text-white overflow-hidden" style={{ background: bgDay }}>
+            <div className="pointer-events-none absolute inset-0" style={{ backgroundImage: 'url(/game-bg.png)', backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.15 }} />
             <div className="pointer-events-none absolute inset-0" style={{ background: bgNight, opacity: nightBlend, transition: 'opacity 1200ms ease' }} />
             <style>{`@keyframes j{0%{transform:translate(0,0)}25%{transform:translate(1px,-1px)}50%{transform:translate(-1px,1px)}75%{transform:translate(1px,1px)}100%{transform:translate(0,0)}} .wj{animation:j .22s infinite} .leaflet-container{background:rgba(0,0,0,.12)} .leaflet-container img{max-width:none!important} .leaflet-control-attribution{background:rgba(0,0,0,.35)!important;color:rgba(255,255,255,.75)!important} .leaflet-control-attribution a{color:rgba(255,255,255,.85)!important} ::-webkit-scrollbar{width:6px;height:6px} ::-webkit-scrollbar-track{background:rgba(255,255,255,0.05)} ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.2);border-radius:10px} ::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.3)} *{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.2) rgba(255,255,255,0.05)}`}</style>
             {coinBursts.map((b) => (

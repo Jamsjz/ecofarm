@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import Navbar from './Navbar';
 
 export default function Landing() {
     const navigate = useNavigate();
@@ -19,6 +20,7 @@ export default function Landing() {
                 backgroundPosition: 'center',
             }}
         >
+            <Navbar />
             <style>{`
         @keyframes lpWindA { 0% { transform: translate3d(-28%, 0px, 0); } 50% { transform: translate3d(-14%, -5px, 0); } 100% { transform: translate3d(0%, 0px, 0); } }
         @keyframes lpWindB { 0% { transform: translate3d(-34%, 0px, 0); } 50% { transform: translate3d(-17%, 6px, 0); } 100% { transform: translate3d(0%, 0px, 0); } }
@@ -88,13 +90,12 @@ export default function Landing() {
                 </svg>
             </div>
 
-            <div className="absolute left-6 top-6 z-10">
-                <div
-                    className="inline-flex items-center justify-center rounded-2xl bg-white/10 px-5 py-2.5 text-white ring-1 ring-white/20 backdrop-blur-xl"
-                    style={{ boxShadow: '0 16px 60px rgba(0,0,0,.20)' }}
-                >
-                    <div className="text-lg font-extrabold tracking-wide">EcoFarm</div>
-                </div>
+            <div className="absolute left-6 top-[18px] z-10">
+                <img
+                    src="/logo.png"
+                    alt="EcoFarm Logo"
+                    className="h-24 w-auto object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.3)] transition-transform hover:scale-105"
+                />
             </div>
 
             <main className="relative z-10 flex min-h-screen items-center justify-center px-6">
@@ -110,7 +111,7 @@ export default function Landing() {
                                 textShadow: '0 14px 50px rgba(0,0,0,.48)',
                             }}
                         >
-                            ECOFARM
+                            ECOFARMA
                         </div>
                         <div className="mt-4 flex justify-center">
                             <div
@@ -118,29 +119,40 @@ export default function Landing() {
                                 style={{ boxShadow: '0 16px 60px rgba(0,0,0,.18)' }}
                             >
                                 <div className="text-base font-medium leading-relaxed tracking-wide md:text-lg" style={{ textShadow: '0 8px 22px rgba(0,0,0,.30)' }}>
-                                    Learn sustainable farming, manage crops, and grow your virtual farm.
+                                    Experience the future of agriculture-master sustainable farming in our immersive game, or instantly diagnose crop health with our advanced AI detection.
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div className="mt-10 flex justify-center">
+                    <div className="mt-12 flex flex-col items-center justify-center gap-6 sm:flex-row">
                         <button
                             type="button"
                             onClick={() => navigate('/game')}
-                            className="group relative inline-flex items-center justify-center rounded-2xl px-8 py-3 text-sm font-bold tracking-wide text-white outline-none transition-all duration-300 ease-out hover:-translate-y-0.5 hover:scale-[1.03] active:translate-y-0 active:scale-[0.98]"
+                            className="group relative inline-flex min-w-[200px] items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-amber-500 to-orange-600 px-8 py-4 text-sm font-black tracking-widest text-white uppercase shadow-[0_10px_20px_rgba(0,0,0,0.2)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_rgba(245,158,11,0.3)] active:translate-y-0 active:scale-95"
                         >
-                            <span className="absolute -inset-10 rounded-[28px] bg-white/12 blur-3xl opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-                            <span className="absolute inset-0 rounded-2xl bg-white/10 backdrop-blur-3xl backdrop-saturate-200 ring-1 ring-white/30 shadow-[0_22px_90px_rgba(0,0,0,0.40)] transition-all duration-400 group-hover:bg-white/14 group-hover:ring-white/45 group-hover:shadow-[0_30px_120px_rgba(0,0,0,0.46)]" />
-                            <span className="absolute inset-[1px] rounded-2xl bg-gradient-to-b from-white/30 via-white/10 to-white/5 opacity-90" />
-                            <span className="absolute inset-[1px] rounded-2xl bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.35),rgba(255,255,255,0)_55%)] opacity-80 mix-blend-overlay" />
-                            <span className="absolute inset-0 overflow-hidden rounded-2xl">
-                                <span className="absolute -left-1/2 top-0 h-full w-1/2 bg-gradient-to-r from-transparent via-white/55 to-transparent blur-sm" style={{ animation: 'lpShimmer 2.8s ease-in-out infinite' }} />
-                            </span>
-                            <span className="relative flex items-center gap-2 drop-shadow-[0_12px_34px_rgba(0,0,0,0.40)]">
+                            <span className="absolute inset-0 bg-white/20 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                            <span className="relative flex items-center gap-3">
+                                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
                                 ENTER GAME
                             </span>
                         </button>
+
+                        <a
+                            href="http://localhost:5173"
+                            className="group relative inline-flex min-w-[200px] items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 px-8 py-4 text-sm font-black tracking-widest text-white uppercase shadow-[0_10px_20px_rgba(0,0,0,0.2)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_rgba(16,185,129,0.3)] active:translate-y-0 active:scale-95"
+                        >
+                            <span className="absolute inset-0 bg-white/20 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                            <span className="relative flex items-center gap-3">
+                                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                                DETECT
+                            </span>
+                        </a>
                     </div>
                 </div>
             </main>
