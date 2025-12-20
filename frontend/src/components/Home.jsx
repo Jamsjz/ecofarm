@@ -357,6 +357,8 @@ export default function Home() {
     ]);
     const [chatInput, setChatInput] = React.useState('');
     const [chatBusy, setChatBusy] = React.useState(false);
+    const [recentActions, setRecentActions] = React.useState([]);
+    const recentActionsRef = React.useRef([]);
     const [selectedCrop, setSelectedCrop] = React.useState('');
     const [nurseryOpen, setNurseryOpen] = React.useState(false);
     const nurseryRef = React.useRef(null);
@@ -1090,6 +1092,62 @@ export default function Home() {
         [biome, selection, getSuitabilityScore],
     );
 
+    // Build game state for backend chat
+    const buildGameState = React.useCallback(() => {
+        return {
+            location: loc || biome,
+            region: biome,
+            gold: coins,
+            day: day,
+            grid: grid.map((p, i) => ({
+                n: 40 + (rain / 10),
+                p: 40,
+                k: 40,
+                rainfall: rain * 2.5,
+                ph: 6.5,
+                humidity: sun,
+                temperature: temp,
+                moisture: rain,
+                crop: p?.species || null,
+                stage: p?.growthProgress || 0,
+                max_stage: 100,
+                weed: 0,
+                health: p?.health || 100
+            }))
+        };
+    }, [loc, biome, coins, day, grid, rain, sun, temp]);
+
+    // Trigger auto chat after actions
+    const triggerAutoChat = React.useCallback(async (actionLog) => {
+        if (chatBusy) return;
+        setChatBusy(true);
+
+        try {
+            const res = await fetch(`${API_URL}/chat`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    message: null,
+                    recent_actions: [actionLog, ...recentActionsRef.current.slice(0, 4)],
+                    game_state: buildGameState()
+                }),
+            });
+            if (res.ok) {
+                const data = await res.json();
+                const reply = data?.response || '';
+                if (reply) {
+                    setChatMsgs((prev) => [...prev, { id: uid(), role: 'assistant', text: reply }]);
+                }
+            } else {
+                console.error('Auto-chat API error:', res.status);
+            }
+        } catch (err) {
+            console.error('Auto-chat fetch error:', err);
+        } finally {
+            setChatBusy(false);
+        }
+    }, [chatBusy, buildGameState]);
+
     const handleBackendAction = React.useCallback(async (actionKey) => {
         if (!running) {
             setToast('⚠️ Start simulation to perform actions.');
@@ -1256,7 +1314,13 @@ export default function Home() {
         setActionBusy(null);
         void fetchRecommendations(); // Auto-refresh recommendations
 
-    }, [biome, selection, advanceSimulationStep, actionBusy, fetchRecommendations, running]);
+        // Log action for chat context and trigger auto-response
+        const actionLog = `${actionDef.name} applied to ${selection.size} cells (Day ${dayRef.current})`;
+        recentActionsRef.current = [actionLog, ...recentActionsRef.current.slice(0, 9)];
+        setRecentActions(recentActionsRef.current);
+        triggerAutoChat(actionLog);
+
+    }, [biome, selection, advanceSimulationStep, actionBusy, fetchRecommendations, running, triggerAutoChat]);
 
     const clearDead = React.useCallback(() => {
         let cleared = 0;
@@ -1288,59 +1352,32 @@ export default function Home() {
         setChatMsgs((prev) => [...prev, { id: uid(), role: 'user', text }]);
         setChatBusy(true);
 
-        const drought = sun > 80 && rain < 20;
-        const drowning = rain > 80;
-        const fallback = () => {
-            const t = text.toLowerCase();
-            if (t.includes('stats') || t.includes('health')) {
-                return `Field Stats → Avg health ${Math.round(avgHealth)}. Alive ${alive}/${total}. Sun ${Math.round(sun)} Rain ${Math.round(rain)} Wind ${Math.round(wind)}.`;
-            }
-            if (t.includes('biome') || t.includes('location')) {
-                return `Current biome is ${biome}. Matching-biome crops grow 1.5x faster. Try keywords: Kathmandu/Pokhara/Ilam (Hilly), Chitwan/Lumbini/Biratnagar (Terai), Mustang/Manang/Solukhumbu (Mountain).`;
-            }
-            if (t.includes('advice') || t.includes('help') || t.includes('how')) {
-                if (drought) return 'Drought risk detected. Increase Rain (or Water All) and reduce Sun below 80 to prevent health loss.';
-                if (drowning) return 'Drowning risk detected. Reduce Rain below 80; add Wind to lean rain and help canopy drying.';
-                return `Stable conditions. Keep Sun ~55–75, Rain ~35–70. In ${biome}, matching crops get 1.5x growth speed.`;
-            }
-            return 'Ask for “advice”, “stats”, or “biome”.';
-        };
-
         try {
-            const proxyUrl = import.meta?.env?.VITE_GEMINI_PROXY_URL;
-            if (proxyUrl) {
-                const res = await fetch(proxyUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        text,
-                        biome,
-                        day,
-                        timeOfDay: tod,
-                        env: { sun, rain, wind, temperature: temp },
-                        field: { avgHealth, alive, total },
-                    }),
-                });
+            const res = await fetch(`${API_URL}/chat`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    message: text,
+                    recent_actions: recentActionsRef.current.slice(0, 5),
+                    game_state: buildGameState()
+                }),
+            });
+            if (res.ok) {
                 const data = await res.json();
-                const reply = data?.reply || data?.advice || data?.text || '';
-                setChatMsgs((prev) => [...prev, { id: uid(), role: 'assistant', text: reply || fallback() }]);
+                const reply = data?.response || '';
+                setChatMsgs((prev) => [...prev, { id: uid(), role: 'assistant', text: reply || 'No response from lab assistant.' }]);
             } else {
-                await new Promise((r) => setTimeout(r, 250));
-                setChatMsgs((prev) => [...prev, { id: uid(), role: 'assistant', text: fallback() }]);
+                const errText = await res.text();
+                console.error('Chat API error:', res.status, errText);
+                setChatMsgs((prev) => [...prev, { id: uid(), role: 'assistant', text: `Error: Backend returned ${res.status}. Check if backend is running.` }]);
             }
-        } catch {
-            setChatMsgs((prev) => [
-                ...prev,
-                {
-                    id: uid(),
-                    role: 'assistant',
-                    text: 'Lab network issue. Set VITE_GEMINI_PROXY_URL to enable Gemini, otherwise use offline advice.',
-                },
-            ]);
+        } catch (err) {
+            console.error('Chat fetch error:', err);
+            setChatMsgs((prev) => [...prev, { id: uid(), role: 'assistant', text: `Error: Could not connect to backend. Make sure the server is running on ${API_URL}` }]);
         } finally {
             setChatBusy(false);
         }
-    }, [alive, avgHealth, biome, chatBusy, chatInput, day, rain, sun, temp, tod, total, wind]);
+    }, [chatBusy, chatInput, buildGameState]);
 
     return (
         <div className="relative h-screen flex flex-col w-full text-white overflow-hidden" style={{ background: bgDay }}>
@@ -1376,8 +1413,8 @@ export default function Home() {
 
                         <div className={`flex min-h-0 flex-1 flex-col rounded-2xl p-3 ${glass}`}>
                             <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2 text-sm font-semibold tracking-wide"><FlaskConical className="h-5 w-5" />Laboratory Chat</div>
-                                <div className="text-[11px] opacity-70">Gemini-ready</div>
+                                <div className="flex items-center gap-2 text-sm font-semibold tracking-wide"><FlaskConical className="h-5 w-5" />EcoBot</div>
+                                <div className="text-[11px] opacity-70"></div>
                             </div>
                             <div className="mt-3 min-h-0 flex-1 overflow-hidden rounded-xl bg-white/10 ring-1 ring-white/10">
                                 <div className="h-full space-y-2 overflow-y-auto p-3">
@@ -1389,7 +1426,11 @@ export default function Home() {
                                                     : 'bg-white/10 ring-1 ring-white/10'
                                                     }`}
                                             >
-                                                {m.text}
+                                                {m.role === 'assistant' && window.markdown ? (
+                                                    <div dangerouslySetInnerHTML={{ __html: window.markdown.toHTML(m.text) }} />
+                                                ) : (
+                                                    m.text
+                                                )}
                                             </div>
                                         </div>
                                     ))}
@@ -1725,7 +1766,7 @@ export default function Home() {
                                             <div className="flex flex-col leading-none overflow-hidden w-full">
                                                 <span className="truncate w-full">{action.name}</span>
                                                 <div className="flex justify-between items-center w-full mt-1">
-                                                    <span className="text-[10px] opacity-60 font-mono">{action.cost[biome]}g</span>
+                                                    <span className="text-[10px] opacity-60 font-mono">{action.cost[biome]}💰</span>
                                                     <span className="text-[9px] opacity-50">{action.duration}</span>
                                                 </div>
                                             </div>
@@ -1765,7 +1806,7 @@ export default function Home() {
                                             <span className="font-semibold text-sm">{rec.crop}</span>
                                         </div>
                                         <span className={`text-sm font-bold ${i === 0 ? 'text-emerald-400' : i === 1 ? 'text-amber-400' : 'text-white/70'}`}>
-                                            {typeof rec.score === 'number' ? `${Math.round(rec.score)}g` : rec.score}
+                                            {typeof rec.score === 'number' ? `${Math.round(rec.score)}💰` : rec.score}
                                         </span>
                                     </div>
                                 ))}
